@@ -42,6 +42,9 @@ py -m pip install neovim
 py -m pip install neovim-remote
 deactivate
 
+# Go
+choco install go -y
+
 # RipGrep, fd, fzf and Silver Searcher for finding and sorting
 choco install ripgrep -y
 choco install ag -y
@@ -107,3 +110,4 @@ npm install -g neovim
 #
 ## If issue https://github.com/Samsung/netcoredbg/issues/94 still not fixed, may have to manually modify the source code prior to this command
 #cmake .. -G "Visual Studio 17 2022" # Assumes we have 2022 VS installed
+refreshenv

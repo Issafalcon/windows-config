@@ -7,3 +7,9 @@ Collection of configuration files and scripts to set up my dev environment on Wi
 Contains the Windows Terminal software settings in `settings.json`
 
 - Copy settings to override the file in `%USERPROFILE%\AppData\Local\Packages\<Windows terminal package location>`
+
+## Lazygit
+
+Contains config file for Windows
+
+- Copy this file to %APPDATA%\Roaming\lazygit
