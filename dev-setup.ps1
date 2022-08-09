@@ -22,6 +22,7 @@ choco install neovim -y
 
 # Git
 winget install --id Git.Git -e --source winget
+choco install delta -y
 
 # Install gcc (also adds tar)
 choco install mingw
@@ -58,6 +59,7 @@ choco install nodejs -y
 Write-Host "Add nodejs to path"
 $env:Path += ";C:\Program Files\nodejs" 
 
+# Install neovim
 npm install -g neovim
 #
 ## Cmake
@@ -77,37 +79,17 @@ npm install -g neovim
 ## Tree Sitter
 #choco install tree-sitter -y
 #
-## Install formatters / linters for LSP
-#npm install -g lua-fmt
-#npm install -g eslint
-#npm install -g eslint_d
-#npm install -g prettier
-#npm install -g markdownlint
-#npm install -g stylua
-#
-#
-## Install debug adapters - Used for DAP only. Vimspector installs them as 'gadgets'
-#mkdir -p ~/debug-adapters
-#
-#git clone https://github.com/microsoft/vscode-node-debug2.git ~/debug-adapters/vscode-node-debug2
-#cd ~/debug-adapters/vscode-node-debug2
-#npm install
-#
-#git clone https://github.com/Microsoft/vscode-chrome-debug ~/debug-adapters/vscode-chrome-debug
-#cd ~/debug-adapters/vscode-chrome-debug
-#npm install
-#npm run build
-#
-#git clone https://github.com/rogalmic/vscode-bash-debug.git ~/debug-adapters/vscode-bash-debug
-#cd ~/debug-adapters/vscode-bash-debug
-#npm install
-#npm run compile
-#
-#git clone https://github.com/Samsung/netcoredbg.git $env:USERPROFILE/debug-adapters/netcoredbg
-#cd ~/debug-adapters/netcoredbg
-#mkdir build
-#cd build
-#
 ## If issue https://github.com/Samsung/netcoredbg/issues/94 still not fixed, may have to manually modify the source code prior to this command
 #cmake .. -G "Visual Studio 17 2022" # Assumes we have 2022 VS installed
+refreshenv
+
+###################################################################
+# Windows Powershell
+###################################################################
+
+winget install JanDeDobbeleer.OhMyPosh -s winget
+if (!(Test-Path -Path $PROFILE.AllUsersAllHosts)) {
+  New-Item -ItemType File -Path $PROFILE.AllUsersAllHosts -Force
+}
+Add-Content -Value "oh-my-posh --init --shell pwsh --config ~/jandedobbeleer.omp.json | Invoke-Expression" -Path $PROFILE
 refreshenv
