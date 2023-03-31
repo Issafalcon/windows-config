@@ -1,5 +1,7 @@
+param ([Parameter(Mandatory)]$installationdrive, $installvisualstudio)
 Write-Host "Installing Choco"
 
+$env:ChocolateyInstall = '$installationdrive:\ProgramData\chocolatey\'
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
 refreshenv
@@ -7,11 +9,13 @@ refreshenv
 ###################################################################
 # Visual Studio
 ###################################################################
-choco install visualstudio2022community # Upgrade to professional or enterprise as needed
-choco install visualstudio2022-workload-azure
-choco install visualstudio2022-workload-netweb
-choco install visualstudio2022-workload-netcoretools
-choco install visualstudio2022-workload-nativedesktop # Needed even if not usign C++ dev as the netcoredbg install relies on it
+if($installvisualstudio -ne $null) {
+  choco install visualstudio2022community # Upgrade to professional or enterprise as needed
+  choco install visualstudio2022-workload-azure
+  choco install visualstudio2022-workload-netweb
+  choco install visualstudio2022-workload-netcoretools
+  choco install visualstudio2022-workload-nativedesktop # Needed even if not usign C++ dev as the netcoredbg install relies on it
+}
 
 ###################################################################
 # Neovim And Related Dependencies                           
@@ -26,7 +30,7 @@ choco install delta -y
 
 # Install gcc (also adds tar)
 choco install mingw
-$env:Path += ';C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin'
+$env:Path += ';$installationdrive:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin'
 
 # 7zip
 choco install 7zip -y
@@ -57,7 +61,7 @@ Write-Host "Installing NodeJs"
 choco install nodejs -y
 
 Write-Host "Add nodejs to path"
-$env:Path += ";C:\Program Files\nodejs" 
+$env:Path += ";$installationdrive:\Program Files\nodejs" 
 
 # Install neovim
 npm install -g neovim
