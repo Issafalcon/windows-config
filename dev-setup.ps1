@@ -1,17 +1,10 @@
+param ([Parameter(Mandatory)]$installationdrive, $installvisualstudio)
 Write-Host "Installing Choco"
 
+$env:ChocolateyInstall = '$installationdrive:\ProgramData\chocolatey\'
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
 refreshenv
-
-###################################################################
-# Visual Studio
-###################################################################
-choco install visualstudio2022community # Upgrade to professional or enterprise as needed
-choco install visualstudio2022-workload-azure
-choco install visualstudio2022-workload-netweb
-choco install visualstudio2022-workload-netcoretools
-choco install visualstudio2022-workload-nativedesktop # Needed even if not usign C++ dev as the netcoredbg install relies on it
 
 ###################################################################
 # Neovim And Related Dependencies                           
@@ -19,10 +12,6 @@ choco install visualstudio2022-workload-nativedesktop # Needed even if not usign
 
 # Neovim
 choco install neovim -y
-
-# Git
-winget install --id Git.Git -e --source winget
-choco install delta -y
 
 # Install gcc (also adds tar)
 choco install mingw
