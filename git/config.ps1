@@ -1,3 +1,12 @@
+param (
+  [Parameter(Mandatory)]$installationdrive
+)
+
+$scriptDir = $(Split-Path -parent $MyInvocation.MyCommand.Definition)
+
+# Symlink themes config to correct location
+New-Item -ItemType SymbolicLink -Path "~/themes.gitconfig" -Target "${scriptDir}/themes.gitconfig"
+
 # Set delta config
 git config --global core.pager "delta --dark --paging=never"
 git config --global include.path "~/themes.gitconfig"
