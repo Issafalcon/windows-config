@@ -15,7 +15,7 @@ choco install neovim -y
 
 # Install gcc (also adds tar)
 choco install mingw
-$env:Path += ';C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin'
+$env:Path += ';$installationdrive:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin'
 
 # 7zip
 choco install 7zip -y
@@ -46,7 +46,7 @@ Write-Host "Installing NodeJs"
 choco install nodejs -y
 
 Write-Host "Add nodejs to path"
-$env:Path += ";C:\Program Files\nodejs" 
+$env:Path += ";$installationdrive:\Program Files\nodejs" 
 
 # Install neovim
 npm install -g neovim
