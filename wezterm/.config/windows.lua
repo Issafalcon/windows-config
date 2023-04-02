@@ -1,3 +1,4 @@
+local wezterm = require("wezterm")
 local windows = {}
 
 function windows.apply_to_config(config)
@@ -13,6 +14,11 @@ function windows.apply_to_config(config)
         hue = 0.5,
         saturation = 0.9,
         brightness = 0.3,
+    }
+
+    config.window_frame = {
+      font = wezterm.font { family = 'Roboto', weight = 'Bold' },
+      font_size = 13.0
     }
 end
 

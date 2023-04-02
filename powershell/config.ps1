@@ -4,7 +4,7 @@
 
 winget install JanDeDobbeleer.OhMyPosh -s winget
 Install-Module -Name Terminal-Icons -Repository PSGallery
-Install-Module -Name PSReadLine -AllowPrerelease -Scope AllUsers -Force -SkipPublisherCheck
+Install-Module -Name PSReadLine -Scope AllUsers -Force -SkipPublisherCheck
 if (!(Test-Path -Path $PROFILE.AllUsersAllHosts)) {
   New-Item -ItemType File -Path $PROFILE.AllUsersAllHosts -Force
 }
@@ -13,4 +13,3 @@ Add-Content -Value "Import-Module -Name Terminal-Icons" -Path $PROFILE.AllUsersA
 Add-Content -Value "Set-PSReadLineOption -PredictionSource History" -Path $PROFILE.AllUsersAllHosts
 Add-Content -Value "Set-PSReadLineOption -PredictionViewStyle ListView" -Path $PROFILE.AllUsersAllHosts
 Add-Content -Value "Set-PSReadLineOption -EditMode Windows" -Path $PROFILE.AllUsersAllHosts
-refreshenv
