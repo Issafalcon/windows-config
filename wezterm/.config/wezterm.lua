@@ -4,6 +4,7 @@ local fonts = require("fonts")
 local windows = require("windows")
 local launchmenu = require("launchmenu")
 local keybindings = require("keybindings")
+require("eventhandlers")
 
 local config = {}
 
