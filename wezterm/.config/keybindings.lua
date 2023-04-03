@@ -1,4 +1,4 @@
-local tables_utils = require('utils.tables')
+local tables_utils = require("utils.tables")
 local wezterm = require("wezterm")
 local act = wezterm.action
 
@@ -8,38 +8,35 @@ local keybindings = {}
 --- keybinds
 ---------------------------------------------------------------
 keybindings.tmux_keybinds = {
-	{ key = "k", mods = "ALT", action = act({ SpawnTab = "CurrentPaneDomain" }) },
-	{ key = "j", mods = "ALT", action = act({ CloseCurrentTab = { confirm = true } }) },
-	{ key = "h", mods = "ALT", action = act({ ActivateTabRelative = -1 }) },
-	{ key = "l", mods = "ALT", action = act({ ActivateTabRelative = 1 }) },
-	{ key = "h", mods = "ALT|CTRL", action = act({ MoveTabRelative = -1 }) },
-	{ key = "l", mods = "ALT|CTRL", action = act({ MoveTabRelative = 1 }) },
-	--{ key = "k", mods = "ALT|CTRL", action = act.ActivateCopyMode },
+	{ key = "b", mods = "LEADER|CTRL", action = wezterm.action({ SendString = "\x02" }) },
+	{ key = "c", mods = "LEADER", action = act({ SpawnTab = "CurrentPaneDomain" }) },
+	{ key = "&", mods = "LEADER|SHIFT", action = wezterm.action({ CloseCurrentTab = { confirm = true } }) },
+	{ key = "x", mods = "LEADER", action = wezterm.action({ CloseCurrentPane = { confirm = true } }) },
 	{
 		key = "k",
 		mods = "ALT|CTRL",
 		action = act.Multiple({ act.CopyMode("ClearSelectionMode"), act.ActivateCopyMode, act.ClearSelection }),
 	},
 	{ key = "j", mods = "ALT|CTRL", action = act({ PasteFrom = "PrimarySelection" }) },
-	{ key = "1", mods = "ALT", action = act({ ActivateTab = 0 }) },
-	{ key = "2", mods = "ALT", action = act({ ActivateTab = 1 }) },
-	{ key = "3", mods = "ALT", action = act({ ActivateTab = 2 }) },
-	{ key = "4", mods = "ALT", action = act({ ActivateTab = 3 }) },
-	{ key = "5", mods = "ALT", action = act({ ActivateTab = 4 }) },
-	{ key = "6", mods = "ALT", action = act({ ActivateTab = 5 }) },
-	{ key = "7", mods = "ALT", action = act({ ActivateTab = 6 }) },
-	{ key = "8", mods = "ALT", action = act({ ActivateTab = 7 }) },
-	{ key = "9", mods = "ALT", action = act({ ActivateTab = 8 }) },
-	{ key = "-", mods = "ALT", action = act({ SplitVertical = { domain = "CurrentPaneDomain" } }) },
-	{ key = "\\", mods = "ALT", action = act({ SplitHorizontal = { domain = "CurrentPaneDomain" } }) },
-	{ key = "h", mods = "ALT|SHIFT", action = act({ ActivatePaneDirection = "Left" }) },
-	{ key = "l", mods = "ALT|SHIFT", action = act({ ActivatePaneDirection = "Right" }) },
-	{ key = "k", mods = "ALT|SHIFT", action = act({ ActivatePaneDirection = "Up" }) },
-	{ key = "j", mods = "ALT|SHIFT", action = act({ ActivatePaneDirection = "Down" }) },
-	{ key = "h", mods = "ALT|SHIFT|CTRL", action = act({ AdjustPaneSize = { "Left", 1 } }) },
-	{ key = "l", mods = "ALT|SHIFT|CTRL", action = act({ AdjustPaneSize = { "Right", 1 } }) },
-	{ key = "k", mods = "ALT|SHIFT|CTRL", action = act({ AdjustPaneSize = { "Up", 1 } }) },
-	{ key = "j", mods = "ALT|SHIFT|CTRL", action = act({ AdjustPaneSize = { "Down", 1 } }) },
+	{ key = "1", mods = "LEADER", action = act({ ActivateTab = 0 }) },
+	{ key = "2", mods = "LEADER", action = act({ ActivateTab = 1 }) },
+	{ key = "3", mods = "LEADER", action = act({ ActivateTab = 2 }) },
+	{ key = "4", mods = "LEADER", action = act({ ActivateTab = 3 }) },
+	{ key = "5", mods = "LEADER", action = act({ ActivateTab = 4 }) },
+	{ key = "6", mods = "LEADER", action = act({ ActivateTab = 5 }) },
+	{ key = "7", mods = "LEADER", action = act({ ActivateTab = 6 }) },
+	{ key = "8", mods = "LEADER", action = act({ ActivateTab = 7 }) },
+	{ key = "9", mods = "LEADER", action = act({ ActivateTab = 8 }) },
+	{ key = "-", mods = "LEADER", action = act({ SplitVertical = { domain = "CurrentPaneDomain" } }) },
+	{ key = "\\", mods = "LEADER", action = act({ SplitHorizontal = { domain = "CurrentPaneDomain" } }) },
+	{ key = "h", mods = "LEADER", action = wezterm.action({ ActivatePaneDirection = "Left" }) },
+	{ key = "j", mods = "LEADER", action = wezterm.action({ ActivatePaneDirection = "Down" }) },
+	{ key = "k", mods = "LEADER", action = wezterm.action({ ActivatePaneDirection = "Up" }) },
+	{ key = "l", mods = "LEADER", action = wezterm.action({ ActivatePaneDirection = "Right" }) },
+	{ key = "H", mods = "LEADER|SHIFT", action = wezterm.action({ AdjustPaneSize = { "Left", 5 } }) },
+	{ key = "J", mods = "LEADER|SHIFT", action = wezterm.action({ AdjustPaneSize = { "Down", 5 } }) },
+	{ key = "K", mods = "LEADER|SHIFT", action = wezterm.action({ AdjustPaneSize = { "Up", 5 } }) },
+	{ key = "L", mods = "LEADER|SHIFT", action = wezterm.action({ AdjustPaneSize = { "Right", 5 } }) },
 	{ key = "Enter", mods = "ALT", action = "QuickSelect" },
 	{ key = "/", mods = "ALT", action = act.Search("CurrentSelectionOrEmptyString") },
 }
@@ -56,10 +53,8 @@ keybindings.default_keybinds = {
 	{ key = "z", mods = "ALT", action = "ReloadConfiguration" },
 	{ key = "z", mods = "ALT|SHIFT", action = act({ EmitEvent = "toggle-tmux-keybinds" }) },
 	{ key = "e", mods = "ALT", action = act({ EmitEvent = "trigger-nvim-with-scrollback" }) },
-	{ key = "q", mods = "ALT", action = act({ CloseCurrentPane = { confirm = true } }) },
-	{ key = "x", mods = "ALT", action = act({ CloseCurrentPane = { confirm = true } }) },
 	{ key = "a", mods = "ALT", action = wezterm.action.ShowLauncher },
-	{ key = " ", mods = "ALT", action = wezterm.action.ShowTabNavigator },
+	{ key = "g", mods = "LEADER", action = wezterm.action.ShowTabNavigator },
 	{
 		key = "r",
 		mods = "ALT",
@@ -72,15 +67,7 @@ keybindings.default_keybinds = {
 			},
 		}),
 	},
-	{ key = "s", mods = "ALT", action = act.PaneSelect({
-		alphabet = "1234567890",
-	}) },
-	{
-		key = "b",
-		mods = "ALT",
-		action = act.RotatePanes("CounterClockwise"),
-	},
-	{ key = "f", mods = "ALT", action = act.RotatePanes("Clockwise") },
+	{ key = "s", mods = "LEADER", action = act.PaneSelect({ alphabet = "1234567890" }) },
 }
 
 function keybindings.create_keybinds()

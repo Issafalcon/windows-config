@@ -9,17 +9,18 @@ require("eventhandlers")
 local config = {}
 
 if wezterm.config_builder then
-    config = wezterm.config_builder()
+	config = wezterm.config_builder()
 end
 
 -- Custom Config
-config.default_prog = { 'pwsh' }
+config.default_prog = { "pwsh" }
 config.use_fancy_tab_bar = true
 config.disable_default_key_bindings = true
 config.enable_csi_u_key_encoding = true
-config.leader = { key = "Space", mods = "CTRL|SHIFT" }
+config.leader = { key = "b", mods = "CTRL" }
 config.keys = keybindings.create_keybinds()
 config.selection_word_boundary = " \t\n{}[]()\"'`,;:│=&!%"
+config.enable_scroll_bar = true
 
 colors.apply_to_config(config)
 fonts.apply_to_config(config)
