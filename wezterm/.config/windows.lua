@@ -27,6 +27,7 @@ function windows.apply_to_config(config)
 		top = 0,
 		bottom = 0,
 	}
+	config.adjust_window_size_when_changing_font_size = false
 end
 
 return windows
