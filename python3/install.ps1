@@ -1,5 +1,5 @@
 param (
-  [Parameter(Mandatory)]$installationdrive,
+  $installationdrive = "C"
   [switch] $createneovimenv = $true
 )
 

@@ -28,6 +28,7 @@ scoop install fd
 # Tools for mason package manager extraction
 scoop install wget
 scoop install unzip
+scoop install gzip
 
 ## Python3
 & $PSScriptRoot/../python3/install.ps1 -installationdrive $installationdrive -createneovimenv

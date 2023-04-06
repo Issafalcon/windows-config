@@ -1,8 +1,7 @@
 param (
-  [Parameter(Mandatory)]$installationdrive
+  $installationdrive = "C"
 )
 
-# Symlink themes config to correct location
 $nvimConfigDir = "${installationdrive}:/repos/nvim-config"
 
 mkdir ${installationdrive}:/repos/
