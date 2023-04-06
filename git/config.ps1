@@ -1,7 +1,3 @@
-param (
-  [Parameter(Mandatory)]$installationdrive
-)
-
 $scriptDir = $(Split-Path -parent $MyInvocation.MyCommand.Definition)
 
 # Symlink themes config to correct location
