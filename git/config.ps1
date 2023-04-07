@@ -1,7 +1,7 @@
 $scriptDir = $(Split-Path -parent $MyInvocation.MyCommand.Definition)
 
 # Symlink themes config to correct location
-New-Item -ItemType SymbolicLink -Path "~/themes.gitconfig" -Target "${scriptDir}/themes.gitconfig"
+New-Item -ItemType SymbolicLink -Path "~/themes.gitconfig" -Target "${scriptDir}/themes.gitconfig" -Force
 
 # Set delta config
 git config --global core.pager "delta --dark --paging=never"

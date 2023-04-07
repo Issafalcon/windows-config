@@ -2,6 +2,7 @@
 
 Collection of configuration files and scripts to set up my dev environment on Windows 10+ machines
 
+## Usage
 ## Terminal
 
 Contains the Windows Terminal software settings in `settings.json`

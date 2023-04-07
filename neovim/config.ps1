@@ -2,6 +2,10 @@ param (
   $installationdrive = "C"
 )
 
+# Make Neovim the default editor
+[System.Environment]::SetEnvironmentVariable('EDITOR', "nvim", "Machine")
+[System.Environment]::SetEnvironmentVariable('VISUAL', "nvim", "Machine")
+
 $nvimConfigDir = "${installationdrive}:/repos/nvim-config"
 
 mkdir ${installationdrive}:/repos/

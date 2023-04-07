@@ -1,4 +1,4 @@
-param ([Parameter(Mandatory)]$installationdrive, $modulename)
+param ($installationdrive = "C", $modulename)
 
 $scriptDir = $(Split-Path -parent $MyInvocation.MyCommand.Definition)
 
@@ -39,7 +39,7 @@ if ($modulename -eq "all") {
   Get-ChildItem -Recurse -Directory | ForEach-Object {
     if (Install-NeededFor $_.Name) {
       & "${_.FullName}/install.ps1" -installationdrive ${installationDrive}
-      & "${_.FullName}/config.ps1"
+      & "${_.FullName}/config.ps1" -installationdrive ${installationDrive}
     }
   }
 }
