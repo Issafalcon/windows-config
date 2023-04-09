@@ -1,7 +1,16 @@
+param (
+  $installationdrive = "C"
+)
+
 $scriptDir = $(Split-Path -parent $MyInvocation.MyCommand.Definition)
 
 # Symlink themes config to correct location
 New-Item -ItemType SymbolicLink -Path "~/themes.gitconfig" -Target "${scriptDir}/themes.gitconfig" -Force
+
+if ($installationdrive -ne "C")
+{
+  New-Item -ItemType SymbolicLink -Path "C:/Program Files/Git/" -Target "${installationdrive}:/Program Files/Git/"
+}
 
 # Set delta config
 git config --global core.pager "delta --dark --paging=never"
