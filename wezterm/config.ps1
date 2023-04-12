@@ -1,11 +1,16 @@
 param (
-  $installationdrive = "C"
+  $installationdrive = "default"
 )
 
-$weztermConfigDir = "${installationdrive}:/repos/wezterm-config"
+if ($installationdrive -eq "default")
+{
+  $weztermConfigDir = "~/repos/wezterm"
+} else
+{
+  $weztermConfigDir = "${installationdrive}:/repos/wezterm"
+}
 $weztermCustomProjectDir =  "~/.config/wezterm-projects"
 
-mkdir ${installationdrive}:/repos/
 git clone https://github.com/Issafalcon/wezterm-config.git $weztermConfigDir
 
 if (Test-Path $weztermCustomProjectDir)

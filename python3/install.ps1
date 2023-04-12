@@ -1,5 +1,5 @@
 param (
-  $installationdrive = "C"
+  $installationdrive = "default",
   [switch] $createneovimenv = $true
 )
 
