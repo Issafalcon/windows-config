@@ -4,15 +4,15 @@ param (
 
 if ($installationdrive -eq "default")
 {
-  $weztermConfigDir = "~/repos/wezterm"
+  $weztermConfigDir = "$HOME/repos/wezterm-config"
 } else
 {
-  $weztermConfigDir = "${installationdrive}:/repos/wezterm"
+  $weztermConfigDir = "${installationdrive}:/repos/wezterm-config"
 }
-$weztermCustomProjectDir =  "~/.config/wezterm-projects"
 
 git clone https://github.com/Issafalcon/wezterm-config.git $weztermConfigDir
 
+$weztermCustomProjectDir =  "$HOME/.config/wezterm-projects"
 if (Test-Path $weztermCustomProjectDir)
 {
   "WezTerm projects folder exists. Skipping creation"
@@ -21,4 +21,4 @@ if (Test-Path $weztermCustomProjectDir)
   New-Item -ItemType Directory -Path $weztermCustomProjectDir
 }
 
-New-Item -ItemType SymbolicLink -Path "~/.config/wezterm" -Target $weztermConfigDir
+New-Item -ItemType SymbolicLink -Path "$HOME/.config/wezterm/" -Target $weztermConfigDir/

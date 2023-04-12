@@ -8,7 +8,7 @@ param (
 
 if ($installationdrive -eq "default")
 {
-  $nvimConfigDir = "~/repos/nvim-config"
+  $nvimConfigDir = "$HOME/repos/nvim-config"
 } else
 {
   $nvimConfigDir = "${installationdrive}:/repos/nvim-config"
