@@ -44,7 +44,7 @@ if ($modulename -eq "all") {
   }
 }
 else {
-  $modulePath = "${scriptDir}$modulename"
+  $modulePath = "${scriptDir}\$modulename"
   & "${modulePath}\install.ps1" -installationdrive ${installationDrive}
   & "${modulePath}\config.ps1" -installationdrive ${installationDrive}
 }
