@@ -3,6 +3,9 @@
 Collection of configuration files and scripts to set up my dev environment on Windows 10+ machines
 
 ## Usage
+
+Modules can be installed and configured using the base `./module-install.ps1` script.
+
 ## Terminal
 
 Contains the Windows Terminal software settings in `settings.json`
