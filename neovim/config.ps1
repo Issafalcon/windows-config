@@ -1,5 +1,5 @@
 param (
-  $installationdrive = "default"
+  [string]$installationdrive = "default"
 )
 
 # Make Neovim the default editor
@@ -8,10 +8,10 @@ param (
 
 if ($installationdrive -eq "default")
 {
-  $nvimConfigDir = "$HOME/repos/nvim-config"
+  $nvimConfigDir = "$HOME\repos\nvim-config"
 } else
 {
-  $nvimConfigDir = "${installationdrive}:/repos/nvim-config"
+  $nvimConfigDir = "${installationdrive}:\repos\nvim-config"
 }
 
 git clone https://github.com/Issafalcon/nvim-config.git $nvimConfigDir
