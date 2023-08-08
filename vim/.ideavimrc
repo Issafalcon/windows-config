@@ -1,0 +1,36 @@
+" Load common vimrc file
+source ~/.vimrc
+
+"""""""" IdeaVim specific config
+
+"""" Plugins
+set surround
+set multiple-cursors
+set commentary
+set argtextobject
+set sneak
+set NERDTree
+
+"""" Plugin Settings
+
+let g:argtextobject_pairs="[:],(:),<:>"
+map <C-n> <Plug>Sneak_S
+map <C-m> <Plug>Sneak_s
+
+"""" Mappings
+
+nnoremap <Leader>so :source ~/.ideavimrc<CR>
+
+" Editing
+nnoremap rn :action RenameElement<CR>
+nnoremap <Leader>f :action ReformatCode<CR>
+
+" Navigation
+nnoremap gd :action GotoDeclaration<CR>
+nnoremap <Leader>a :action FileStructurePopup<CR>
+nnoremap [g :action GotoNextError<CR>
+nnoremap ]g :action GotoPreviousError<CR>
+nnoremap <Leader>e :NERDTreeToggle<CR>
+
+" Search
+nnoremap <Leader>S :action SearchEverywhere<CR>
