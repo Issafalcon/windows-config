@@ -14,8 +14,6 @@ set NERDTree
 """" Plugin Settings
 
 let g:argtextobject_pairs="[:],(:),<:>"
-map <C-n> <Plug>Sneak_S
-map <C-m> <Plug>Sneak_s
 
 """" Mappings
 
