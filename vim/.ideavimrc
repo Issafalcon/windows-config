@@ -22,6 +22,8 @@ nnoremap <Leader>so :source ~/.ideavimrc<CR>
 " Editing
 nnoremap rn :action RenameElement<CR>
 nnoremap <Leader>f :action ReformatCode<CR>
+nnoremap <C-q> :action GotoAction<CR>
+nnoremap <Leader>ca :action ShowIntentionActions<CR>
 
 " Navigation
 nnoremap gd :action GotoDeclaration<CR>
@@ -29,6 +31,20 @@ nnoremap <Leader>a :action FileStructurePopup<CR>
 nnoremap [g :action GotoNextError<CR>
 nnoremap ]g :action GotoPreviousError<CR>
 nnoremap <Leader>e :NERDTreeToggle<CR>
+nnoremap gr :action FindUsages<CR>
+nnoremap gI :action GotoImplementation<CR>
+nnoremap <Leader>tf :action GotoFile<CR>
 
 " Search
-nnoremap <Leader>S :action SearchEverywhere<CR>
+nnoremap <Leader>S :action ReplaceInPath<CR>
+
+" Commenting
+nnoremap gcc :action CommentByLineComment<CR>
+vnoremap gcc :action CommentByLineComment<CR>
+
+" Tool Windows
+nnoremap <F7><F7> :action ActivateTerminalToolWindow<CR>
+
+"" Git
+" Show the git blame annotation gutter
+nnoremap <Leader>gB :action Annotate<CR>
