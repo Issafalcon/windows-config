@@ -1,2 +1,2 @@
 scoop bucket add extras
-scoop install wezterm-nightly
+scoop install wezterm
