@@ -29,10 +29,3 @@ scoop install fd
 scoop install wget
 scoop install unzip
 scoop install gzip
-
-## Python3
-& $PSScriptRoot/../python3/install.ps1 -installationdrive $installationdrive -createneovimenv
-& $PSScriptRoot/../node/install.ps1 -installationdrive $installationdrive -createneovimenv
-
-# TODO: Install nvm / node / npm here before installing additional dependencies
-npm install tree-sitter-cli -g
