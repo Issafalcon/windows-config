@@ -78,7 +78,7 @@ if ($modulename -eq "all")
   {
     if (Install-NeededFor $module)
     {
-      InstallModule -moduleDir $_.FullName
+      InstallModule -moduleDir "${scriptDir}\$module"
     }
   }
 } else
