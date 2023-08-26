@@ -31,3 +31,5 @@ if (Test-Path -Path "~/${repositoriespath}")
 {
   New-Item -ItemType Directory -Path "~/${repositoriespath}"
 }
+
+Read-Host -Prompt "Press Enter to exit"

@@ -1,12 +1,19 @@
 param (
   $installationdrive = "C",
-  [switch] $createneovimenv = $true
+  [switch] $createneovimenv = $false
 )
+
+if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))  
+{  
+  $arguments = "& '" +$myinvocation.mycommand.definition + "'"
+  Start-Process powershell -Verb runAs -ArgumentList $arguments
+  Break
+}
 
 # Python and required pip modules
 scoop bucket add versions
 scoop install python311
-python3 -m pip install --upgrade pip
+python311 -m pip install --upgrade pip
 
 $currentDIr = Get-Location
 
@@ -30,3 +37,5 @@ if ($createneovimenv -eq $true)
 }
 
 Set-Location $currentDir
+
+Read-Host -Prompt "Press Enter to exit"

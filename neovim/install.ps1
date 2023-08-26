@@ -30,4 +30,7 @@ scoop install wget
 scoop install unzip
 scoop install gzip
 
+Start-Process powershell -ArgumentList "& $PSScriptRoot/../python3/install.ps1 -installationdrive $installationdrive -createneovimenv" -Wait
+Start-Process powershell -ArgumentList "& $PSScriptRoot/../node/install.ps1 -installationdrive $installationdrive -createneovimenv" -Wait
+
 npm install tree-sitter-cli -g

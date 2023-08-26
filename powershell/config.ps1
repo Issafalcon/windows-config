@@ -2,6 +2,13 @@
 # Windows Powershell
 ###################################################################
 
+if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))  
+{  
+  $arguments = "& '" +$myinvocation.mycommand.definition + "'"
+  Start-Process pwsh -Verb runAs -ArgumentList $arguments
+  Break
+}
+
 winget install JanDeDobbeleer.OhMyPosh -s winget
 Install-Module -Name Terminal-Icons -Repository PSGallery
 Install-Module -Name PSReadLine -Scope AllUsers -Force -SkipPublisherCheck
@@ -15,3 +22,5 @@ Add-Content -Value "Import-Module -Name Terminal-Icons" -Path $PROFILE.AllUsersA
 Add-Content -Value "Set-PSReadLineOption -PredictionSource History" -Path $PROFILE.AllUsersAllHosts
 Add-Content -Value "Set-PSReadLineOption -PredictionViewStyle ListView" -Path $PROFILE.AllUsersAllHosts
 Add-Content -Value "Set-PSReadLineOption -EditMode Windows" -Path $PROFILE.AllUsersAllHosts
+
+Read-Host -Prompt "Press Enter to exit"
