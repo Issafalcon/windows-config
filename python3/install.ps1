@@ -18,7 +18,7 @@ if ($createneovimenv -eq $true)
   mkdir Envs
   Set-Location Envs
 
-  python3 -m venv neovim # Create the virtual env for python3
+  python311 -m venv neovim # Create the virtual env for python3
   .\neovim\Scripts\activate
   py -m pip install pynvim
   py -m pip install neovim
