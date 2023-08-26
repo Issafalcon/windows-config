@@ -2,7 +2,7 @@
 [System.Environment]::SetEnvironmentVariable('EDITOR', "nvim", "Machine")
 [System.Environment]::SetEnvironmentVariable('VISUAL', "nvim", "Machine")
 
-$nvimConfigDir = "${HOME}:\repos\nvim-config"
+$nvimConfigDir = "${HOME}\repos\nvim-config"
 
 git clone https://github.com/Issafalcon/nvim-config.git $nvimConfigDir
 
