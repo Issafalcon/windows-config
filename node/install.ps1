@@ -8,4 +8,8 @@ Invoke-WebRequest -Uri $url -OutFile $PSScriptRoot\nvm-setup.exe
 $args = @("Comma", "Separated", "Arguments")
 Start-Process -Filepath "$PSScriptRoot/nvm-setup.exe" -ArgumentList $args
 
-Remove-Item $PSScriptRoot/nvm-setup.exe
+Remove-Item $PSScriptRoot/nvm-setup.exe -Force
+
+nvm install lts
+nvm use lts
+npm install tree-sitter-cli -g
