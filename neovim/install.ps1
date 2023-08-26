@@ -29,3 +29,5 @@ scoop install fd
 scoop install wget
 scoop install unzip
 scoop install gzip
+
+npm install tree-sitter-cli -g

@@ -65,7 +65,6 @@ if ($modulename -eq "all")
 {
   $moduleOrder = @(
     'git',
-    'scoop',
     'wezterm',
     # Neovim module install python3 and node modules as part of it
     'neovim',

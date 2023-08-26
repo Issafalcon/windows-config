@@ -12,4 +12,3 @@ Remove-Item $PSScriptRoot/nvm-setup.exe -Force
 
 nvm install lts
 nvm use lts
-npm install tree-sitter-cli -g
