@@ -55,7 +55,7 @@ function InstallModule
   {
     & "${moduleDir}/install.ps1" -installationdrive ${installationDrive}
   }
-  if (Test-Path $_.FullName/config.ps1 -PathType Leaf)
+  if (Test-Path $moduleDir/config.ps1 -PathType Leaf)
   {
     & "${moduleDir}/config.ps1" -installationdrive ${installationDrive}
   }
