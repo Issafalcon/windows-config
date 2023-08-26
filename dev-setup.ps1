@@ -31,5 +31,3 @@ if (Test-Path -Path "~/${repositoriespath}")
 {
   New-Item -ItemType Directory -Path "~/${repositoriespath}"
 }
-
-New-Item -ItemType SymbolicLink -Path "~/${repositoriespath}" -Target "${installationdrive}:/${repositoriespath}" -Force
