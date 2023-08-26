@@ -1,8 +1,4 @@
-param (
-  [string]$installationdrive = "C"
-)
-
-$weztermConfigDir = "${installationdrive}:\repos\wezterm-config"
+$weztermConfigDir = "${HOME}\repos\wezterm-config"
 
 git clone https://github.com/Issafalcon/wezterm-config.git $weztermConfigDir
 
