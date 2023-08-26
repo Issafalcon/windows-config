@@ -1,5 +1,5 @@
 param (
-  $installationdrive = "default",
+  $installationdrive = "C",
   [switch] $createneovimenv = $true
 )
 
@@ -10,19 +10,14 @@ python3 -m pip install --upgrade pip
 
 $currentDIr = Get-Location
 
-if ($installationdrive -eq "default")
-{
-  $installationdrive = "C"
-}
-
-Set-Location "${installationdrive}:\Applications\Scoop\apps\neovim"
-mkdir python3
-Set-Location python3
-mkdir Envs
-Set-Location Envs
-
 if ($createneovimenv -eq $true)
 {
+  Set-Location "${installationdrive}:\Applications\Scoop\apps\neovim"
+  mkdir python3
+  Set-Location python3
+  mkdir Envs
+  Set-Location Envs
+
   python3 -m venv neovim # Create the virtual env for python3
   .\neovim\Scripts\activate
   py -m pip install pynvim

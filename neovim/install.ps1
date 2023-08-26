@@ -1,5 +1,5 @@
 param (
-  $installationdrive = "default"
+  $installationdrive = "C"
 )
 
 # Neovim
@@ -7,7 +7,7 @@ scoop bucket add extras
 scoop install vcredist2022
 scoop install neovim
 
-if ($installationdrive -ne "default") {
+if ($installationdrive -ne "C") {
   # If installation drive is specified, move the heavy data files into this drive instead
   [System.Environment]::SetEnvironmentVariable('XDG_DATA_HOME', "${installationdrive}:\AppData", "User")
 }
@@ -32,6 +32,7 @@ scoop install gzip
 
 ## Python3
 & $PSScriptRoot/../python3/install.ps1 -installationdrive $installationdrive -createneovimenv
+& $PSScriptRoot/../node/install.ps1 -installationdrive $installationdrive -createneovimenv
 
 # TODO: Install nvm / node / npm here before installing additional dependencies
 npm install tree-sitter-cli -g

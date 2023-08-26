@@ -1,4 +1,7 @@
-param ($installationdrive = "C", $modulename)
+param (
+  $installationdrive = "C", 
+  $modulename
+)
 
 $scriptDir = $(Split-Path -parent $MyInvocation.MyCommand.Definition)
 
@@ -42,18 +45,43 @@ function Install-NeededFor
   return $false
 }
 
+function InstallModule
+{
+  param(
+    [string] $moduleDir = ''
+  )
+
+  if (Test-Path $moduleDir/install.ps1 -PathType Leaf)
+  {
+    & "${moduleDir}/install.ps1" -installationdrive ${installationDrive}
+  }
+  if (Test-Path $_.FullName/config.ps1 -PathType Leaf)
+  {
+    & "${moduleDir}/config.ps1" -installationdrive ${installationDrive}
+  }
+}
+
 if ($modulename -eq "all")
 {
-  Get-ChildItem -Recurse -Directory | ForEach-Object {
-    if (Install-NeededFor $_.Name)
+  $moduleOrder = @(
+    'git',
+    'scoop',
+    'wezterm',
+    # Neovim module install python3 and node modules as part of it
+    'neovim',
+    'dotnet',
+    'omnisharp',
+    'powershell', 
+    'lazygit'
+  )
+  foreach ($module in $moduleOrder)
+  {
+    if (Install-NeededFor $module)
     {
-      & "${_.FullName}/install.ps1" -installationdrive ${installationDrive}
-      & "${_.FullName}/config.ps1" -installationdrive ${installationDrive}
+      InstallModule -moduleDir $_.FullName
     }
   }
 } else
 {
-  $modulePath = "${scriptDir}\$modulename"
-  & "${modulePath}\install.ps1" -installationdrive ${installationDrive}
-  & "${modulePath}\config.ps1" -installationdrive ${installationDrive}
+  InstallModule -moduleDir "${scriptDir}\$modulename"
 }
