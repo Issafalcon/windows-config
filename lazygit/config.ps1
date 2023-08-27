@@ -1,7 +1,7 @@
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))  
 {  
   $arguments = "& '" +$myinvocation.mycommand.definition + "'"
-  Start-Process powershell -Verb runAs -ArgumentList $arguments
+  Start-Process powershell -Verb runAs -ArgumentList $arguments -Wait
   Break
 }
 
@@ -16,3 +16,5 @@ if (Test-Path -Path $lazygitConfigDir) {
 }
 
 New-Item -ItemType SymbolicLink -Path "~/AppData/Roaming/lazygit/config.yml" -Target "${scriptDir}/config.yml" -Force
+
+Read-Host -Prompt "Press Enter to exit"
