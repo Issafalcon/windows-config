@@ -10,6 +10,6 @@ Start-Process -Filepath "$PSScriptRoot/nvm-setup.exe" -ArgumentList $args -Wait
 
 Remove-Item $PSScriptRoot/nvm-setup.exe -Force
 
-[System.Environment]::SetEnvironmentVariable('Path', $env:Path + ";${installationdrive}:\Program Files\Git\cmd", "Machine")
+[System.Environment]::SetEnvironmentVariable('Path', $env:Path + "~\AppData\Roaming\nvm", "Machine")
 nvm install lts
 nvm use lts
