@@ -1,0 +1,7 @@
+name: powershell
+description: PowerShell 7 + Oh My Posh profile
+category: Terminal
+dependencies: []
+requires_admin: false
+check_command: Get-Command pwsh -ErrorAction SilentlyContinue
+estimated_time: 2-3 min

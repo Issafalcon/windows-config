@@ -1,0 +1,7 @@
+name: lazygit
+description: Terminal UI for git
+category: Tool
+dependencies: [scoop]
+requires_admin: false
+check_command: Get-Command lazygit -ErrorAction SilentlyContinue
+estimated_time: 1 min

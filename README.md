@@ -1,25 +1,71 @@
 # Windows Config
 
-Collection of configuration files and scripts to set up my dev environment on Windows 10+ machines
+Collection of configuration files and scripts for a Windows 10+ dev environment, managed by a native **Windows Config TUI**.
 
 ## Prerequisites
 
-1. Download and install git for windows (onto your drive of choice)
-2. Create `~/repos` and clone this repo into it as `windows-config`
-3. Run the `module-install.ps1` script to install modules (see script for specific order requried)
+1. **Git for Windows** (install manually first)
+2. **PowerShell 7** (`pwsh`) — `winget install Microsoft.PowerShell`
+3. Clone this repo (typically `~/repos/windows-config`)
+4. Optional but recommended: enable **Windows Developer Mode** (Settings → Privacy & security → For developers) so user-profile **symbolic links** work without elevation
 
-## Usage
+## TUI (preferred)
 
-For now, this repo needs to be cloned into the `~/repos` folder.
+### Prebuilt exe (no Go)
 
-Modules can be installed and configured using the base `./module-install.ps1` script.
+On each `v*` tag, CI publishes a zip under [Releases](https://github.com/Issafalcon/windows-config/releases):
 
-To install all the modules, run the script with the `-modulename` parameters set to `all`.
+1. Download `windows-config-tui-*-windows-amd64.zip` (or `arm64`)
+2. Unzip (keep `tools\ElevatedHelper.ps1` beside the exe)
+3. Clone this repo (for `modules/`) or set `WINDOWS_CONFIG_MODULES_DIR`
+4. Run `windows-config-tui.exe` from Windows Terminal / PowerShell 7
+
+### Build from source
+
+```powershell
+go build -o windows-config-tui.exe ./tui/
+.\windows-config-tui.exe
+```
+
+Or `make -C tui windows`.
+
+The TUI discovers packages under `modules/*/module.yaml`, plans dependency order, runs `install.ps1` then `config.ps1`, and tracks installs in `%USERPROFILE%\.windowsConfigModules`.
+
+Override the modules path with `WINDOWS_CONFIG_MODULES_DIR` or the first-run path prompt (`~/.config/windows-config-tui/config.yaml`).
+
+### Elevation model
+
+The TUI always starts **unelevated**. Modules that set `requires_admin: true` in `module.yaml` are run through a session **elevated helper** (`tools/ElevatedHelper.ps1`):
+
+- First admin job → one UAC prompt
+- Later admin jobs in the same TUI session reuse the helper (no more UAC)
+- Quitting the TUI shuts the helper down
+
+Most modules use **User**-scoped env vars and profile links so they do **not** need admin. Prefer Developer Mode for symlinks under your profile.
+
+### Layout
 
 ```
+windows-config/
+  tui/                 # Go TUI entrypoint
+  internal/            # TUI packages
+  tools/
+    ElevatedHelper.ps1 # session elevated job runner
+  modules/
+    <name>/
+      module.yaml
+      install.ps1      # optional
+      config.ps1       # optional (symlinks / profile — no Stow)
+  module-install.ps1   # deprecated CLI fallback
+```
+
+## Deprecated: `module-install.ps1`
+
+`.\module-install.ps1` still works and now looks under `modules\`, but the TUI is the supported installer. Example:
+
+```powershell
 .\module-install.ps1 -installationdrive D -modulename all
+.\module-install.ps1 -modulename neovim
 ```
 
-You will be prompted which modules you wish to install, and then be able to check the output of each install and config script before continuing (some will run in elevated powershell prompt).
-
-Individual modules can be installed using the specific module name (named after folder name).
+Scripts no longer self-elevate with `Start-Process -Verb RunAs`; elevation is the TUI helper’s job when a module declares `requires_admin`.

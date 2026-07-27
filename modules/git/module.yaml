@@ -1,0 +1,7 @@
+name: git
+description: Git delta pager and themes config
+category: Core
+dependencies: [scoop]
+requires_admin: false
+check_command: Get-Command delta -ErrorAction SilentlyContinue
+estimated_time: 1 min

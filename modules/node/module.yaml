@@ -1,0 +1,7 @@
+name: node
+description: Node.js via nvm-windows
+category: Language
+dependencies: []
+requires_admin: false
+check_command: Get-Command nvm -ErrorAction SilentlyContinue
+estimated_time: 3-5 min

@@ -1,0 +1,17 @@
+{
+	"RoslynExtensionsOptions": {
+    "documentAnalysisTimeoutMs": 10000,
+    "enableDecompilationSupport": true,
+    "enableImportCompletion": true,
+    "enableAnalyzersSupport": true,
+    "diagnosticWorkersThreadCount": 8
+  },
+	"fileOptions": {
+    "systemExcludeSearchPatterns": [
+      "**/node_modules/**/*",
+      "**/bin/**/*",
+      "**/obj/**/*"
+    ],
+    "excludeSearchPatterns": []
+  }
+}

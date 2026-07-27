@@ -1,0 +1,7 @@
+name: omnisharp
+description: OmniSharp formatting config
+category: Editor
+dependencies: [dotnet]
+requires_admin: false
+check_command: false
+estimated_time: 1 min
