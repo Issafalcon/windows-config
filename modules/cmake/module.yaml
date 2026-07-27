@@ -1,0 +1,7 @@
+name: cmake
+description: CMake via scoop
+category: Tool
+dependencies: [scoop]
+requires_admin: false
+check_command: Get-Command cmake -ErrorAction SilentlyContinue
+estimated_time: 1 min

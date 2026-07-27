@@ -1,0 +1,7 @@
+name: python3
+description: Python 3.11 via scoop
+category: Language
+dependencies: [scoop]
+requires_admin: false
+check_command: Get-Command python311 -ErrorAction SilentlyContinue
+estimated_time: 2-3 min

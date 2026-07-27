@@ -1,0 +1,7 @@
+name: yazi
+description: Yazi file manager and deps
+category: Tool
+dependencies: [scoop]
+requires_admin: false
+check_command: Get-Command yazi -ErrorAction SilentlyContinue
+estimated_time: 3-5 min

@@ -1,0 +1,7 @@
+name: dotnet
+description: .NET SDK via winget
+category: Language
+dependencies: []
+requires_admin: false
+check_command: Get-Command dotnet -ErrorAction SilentlyContinue
+estimated_time: 3-5 min

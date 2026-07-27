@@ -1,0 +1,7 @@
+name: vim
+description: Vim / IdeaVim rc symlinks
+category: Editor
+dependencies: []
+requires_admin: false
+check_command: false
+estimated_time: 1 min
