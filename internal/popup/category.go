@@ -1,62 +1,117 @@
+// Category picker popup — select All or a module Category to filter the sidebar.
 package popup
 
 import (
-	tea "charm.land/bubbletea/v2"
-	"github.com/issafalcon/windows-config-tui/internal/theme"
 	"strings"
+
+	tea "charm.land/bubbletea/v2"
+	lipgloss "charm.land/lipgloss/v2"
+
+	"github.com/issafalcon/windows-config-tui/internal/theme"
 )
 
-type CategorySelectedMsg struct{ Category string }
+// CategorySelectedMsg is sent when the user picks a category ("" means All).
+type CategorySelectedMsg struct {
+	Category string
+}
+
+// CategoryCancelMsg is sent when the user dismisses the picker without changing.
 type CategoryCancelMsg struct{}
+
+// CategoryModel is a simple list picker for module categories.
 type CategoryModel struct {
 	Model
-	options []string
+	options []string // first entry is always "All" (maps to "")
 	cursor  int
 }
 
+// NewCategoryPicker creates a category filter popup.
+// categories should be the sorted list from the registry (without "All").
+// current is the active filter ("" for All).
 func NewCategoryPicker(categories []string, current string) CategoryModel {
-	opts := append([]string{"All"}, categories...)
-	c := 0
-	for i, v := range opts {
-		if v == current {
-			c = i
+	opts := make([]string, 0, len(categories)+1)
+	opts = append(opts, "All")
+	opts = append(opts, categories...)
+
+	cursor := 0
+	if current != "" {
+		for i, c := range opts {
+			if c == current {
+				cursor = i
+				break
+			}
 		}
 	}
-	return CategoryModel{Model: NewPopup("Filter by category", "", 36, min(12, len(opts)+4)).Show(), options: opts, cursor: c}
+
+	return CategoryModel{
+		Model:   NewPopup("Filter by category", "", 36, min(12, len(opts)+4)).Show(),
+		options: opts,
+		cursor:  cursor,
+	}
 }
-func (m CategoryModel) Update(msg tea.Msg) (CategoryModel, tea.Cmd) {
-	k, ok := msg.(tea.KeyPressMsg)
-	if !ok {
-		return m, nil
+
+func min(a, b int) int {
+	if a < b {
+		return a
 	}
-	switch k.String() {
-	case "up", "k":
-		m.cursor = max(0, m.cursor-1)
-	case "down", "j":
-		m.cursor = min(len(m.options)-1, m.cursor+1)
-	case "esc", "q":
-		return m, func() tea.Msg { return CategoryCancelMsg{} }
-	case "enter":
-		c := m.options[m.cursor]
-		if c == "All" {
-			c = ""
+	return b
+}
+
+// Update handles navigation and selection for the category picker.
+func (m CategoryModel) Update(msg tea.Msg) (CategoryModel, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "up", "k":
+			if m.cursor > 0 {
+				m.cursor--
+			}
+		case "down", "j":
+			if m.cursor < len(m.options)-1 {
+				m.cursor++
+			}
+		case "enter":
+			cat := m.options[m.cursor]
+			if cat == "All" {
+				cat = ""
+			}
+			return m, func() tea.Msg { return CategorySelectedMsg{Category: cat} }
+		case "esc", "q":
+			return m, func() tea.Msg { return CategoryCancelMsg{} }
 		}
-		return m, func() tea.Msg { return CategorySelectedMsg{c} }
 	}
 	return m, nil
 }
-func (m CategoryModel) Render(w, h int) string {
-	if !m.visible {
+
+// View renders the category list.
+func (m CategoryModel) View() string {
+	var b strings.Builder
+	b.WriteString(theme.DimText.Render("j/k move  ·  enter select  ·  esc cancel"))
+	b.WriteString("\n\n")
+	for i, opt := range m.options {
+		label := opt
+		style := lipgloss.NewStyle().Padding(0, 1)
+		if i == m.cursor {
+			style = style.Bold(true).
+				Foreground(theme.ColorBackground).
+				Background(theme.ColorCyan)
+			b.WriteString(style.Render("▸ " + label))
+		} else {
+			b.WriteString(style.Foreground(theme.ColorForegroundDim).Render("  " + label))
+		}
+		b.WriteString("\n")
+	}
+	return b.String()
+}
+
+// Render produces the bordered centered picker.
+func (m CategoryModel) Render(screenWidth, screenHeight int) string {
+	if !m.Model.IsVisible() {
 		return ""
 	}
-	var lines []string
-	for i, o := range m.options {
-		if i == m.cursor {
-			o = "▸ " + o
-		} else {
-			o = "  " + o
-		}
-		lines = append(lines, o)
-	}
-	return renderPopup(m.title, theme.NormalText.Render(strings.Join(lines, "\n")), m.width, m.height, w, h)
+	return renderPopup(
+		m.Model.title, m.View(),
+		m.Model.width, m.Model.height,
+		screenWidth, screenHeight,
+	)
 }

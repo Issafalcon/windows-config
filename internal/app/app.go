@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	lipgloss "charm.land/lipgloss/v2"
 	"github.com/issafalcon/windows-config-tui/internal/config"
@@ -208,18 +209,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.input, c = m.input.Update(msg)
 			return m, c
 		}
-		if v.String() == "ctrl+c" || v.String() == "q" {
+		// Search owns ordinary keystrokes, including q, while it is active.
+		if m.state == StateDashboard && m.sidebar.IsSearching() {
+			if v.String() == "ctrl+c" {
+				m.elevate.Shutdown()
+				return m, tea.Quit
+			}
+			var c tea.Cmd
+			m.sidebar, c = m.sidebar.Update(msg)
+			return m, c
+		}
+		if key.Matches(v, DefaultKeyMap.Quit) {
 			m.elevate.Shutdown()
 			return m, tea.Quit
 		}
-		if v.String() == "?" {
+		if key.Matches(v, DefaultKeyMap.Help) {
 			m.showHelp = true
 			return m, nil
 		}
 	}
 	if m.state == StatePrereqCheck {
-		updated, c := m.prereq.Update(msg)
-		m.prereq = updated.(prereqs.Model)
+		var c tea.Cmd
+		m.prereq, c = m.prereq.Update(msg)
 		return m, c
 	}
 	if m.state == StateDashboard || m.state == StateInstalling {
@@ -239,12 +250,12 @@ func (m Model) updateDashboard(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.sidebar, c = m.sidebar.Update(msg)
 			return m, c
 		}
-		switch k.String() {
-		case "/", "s":
+		switch {
+		case key.Matches(k, DefaultKeyMap.Search):
 			m.focus = FocusSidebar
 			m.sidebar.SetFocused(true)
 			return m, m.sidebar.ActivateSearch()
-		case "shift+tab":
+		case k.String() == "shift+tab":
 			if m.focus == FocusSidebar {
 				m.focus = FocusDetail
 			} else {
@@ -252,11 +263,11 @@ func (m Model) updateDashboard(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.sidebar.SetFocused(m.focus == FocusSidebar)
 			return m, nil
-		case "c":
+		case key.Matches(k, DefaultKeyMap.FilterCategory):
 			m.category = popup.NewCategoryPicker(module.DefaultRegistry.Categories(), m.sidebar.CategoryFilter())
 			m.showCategory = true
 			return m, nil
-		case "i", "enter":
+		case key.Matches(k, DefaultKeyMap.Install):
 			if m.selected != "" {
 				mod, ok := module.DefaultRegistry.Get(m.selected)
 				if ok {
@@ -306,7 +317,19 @@ func (m *Model) updateDetail(name string) {
 	if !ok {
 		return
 	}
-	m.detail.OverviewModel().SetModule(mod.Name, mod.Description, mod.Website, mod.Repo, nil)
+	deps := make([]detail.DepStatus, 0, len(mod.Dependencies))
+	for _, depName := range mod.Dependencies {
+		check := ""
+		if dep, ok := module.DefaultRegistry.Get(depName); ok {
+			check = dep.CheckCommand
+		}
+		deps = append(deps, detail.DepStatus{
+			Name:      depName,
+			Method:    "module",
+			Installed: utils.ModuleSatisfied(depName, check),
+		})
+	}
+	m.detail.OverviewModel().SetModule(mod.Name, mod.Description, mod.Website, mod.Repo, deps)
 	m.detail.ConfigModel().SetModule(mod.Name, nil)
 }
 func planInstallQueue(target string) ([]string, error) {
@@ -335,6 +358,20 @@ func reviewScripts(name string) string {
 	return strings.Join(parts, "\n\n")
 }
 func (m *Model) resize() {
+	m.sidebar.SetFocused(m.focus == FocusSidebar)
+	w, h := m.contentDimensions()
+	sidebarWidth := int(float64(w) * 0.3)
+	detailWidth := w - sidebarWidth - 1
+	panelHeight := h - 5
+	if panelHeight < 10 {
+		panelHeight = 10
+	}
+	m.sidebar.SetSize(sidebarWidth-2, panelHeight-2)
+	m.detail.SetSize(detailWidth-2, panelHeight-2)
+	m.sidebar.SetYOffset((m.height-(h+2))/2 + 4)
+}
+
+func (m Model) contentDimensions() (int, int) {
 	w, h := int(float64(m.width)*.8)-2, int(float64(m.height)*.8)-2
 	if w < 60 {
 		w = 60
@@ -342,61 +379,137 @@ func (m *Model) resize() {
 	if h < 20 {
 		h = 20
 	}
-	side := w * 3 / 10
-	m.sidebar.SetSize(side-2, h-7)
-	m.detail.SetSize(w-side-3, h-7)
+	return w, h
 }
 func (m Model) View() tea.View {
 	if !m.ready {
 		return tea.NewView("Initializing...")
 	}
-	w, h := int(float64(m.width)*.8)-2, int(float64(m.height)*.8)-2
-	if w < 60 {
-		w = 60
-	}
-	if h < 20 {
-		h = 20
-	}
+	contentWidth, contentHeight := m.contentDimensions()
+
 	var content string
 	switch m.state {
 	case StatePrereqCheck:
-		content = m.prereq.View().Content
+		content = m.prereq.View()
 	case StateModulesSetup:
-		content = theme.Title.Render("Modules path setup") + "\n\n" + theme.NormalText.Render("Choose the folder containing your modules.")
-	default:
-		content = m.dashboard(w, h)
+		content = theme.Title.Render("Modules path setup") + "\n\n" +
+			theme.NormalText.Render("Point the TUI at a folder that contains your modules") + "\n" +
+			theme.DimText.Render("(each subfolder has module.yaml + optional install.ps1 / config.ps1).") + "\n\n" +
+			theme.DimText.Render("Enter a path in the dialog (use ~ for your home directory).")
+	case StateDashboard, StateInstalling:
+		content = m.viewDashboard(contentWidth, contentHeight)
 	}
-	view := theme.AppBorder.Width(w).Height(h).Render(content)
+
+	content = lipgloss.NewStyle().
+		Width(contentWidth).
+		Height(contentHeight).
+		MaxWidth(contentWidth).
+		MaxHeight(contentHeight).
+		Render(content)
+
+	window := theme.AppBorder.
+		Width(contentWidth).
+		Height(contentHeight).
+		Render(content)
+
+	finalView := window
 	if m.showHelp {
-		view = m.help.Render(w+2, h+2)
+		finalView = m.help.Render(contentWidth+2, contentHeight+2)
 	}
 	if m.showConfirm {
-		view = m.confirm.Render(w+2, h+2)
+		finalView = m.confirm.Render(contentWidth+2, contentHeight+2)
 	}
 	if m.showScript {
-		view = m.script.Render(w+2, h+2)
+		finalView = m.script.Render(contentWidth+2, contentHeight+2)
 	}
 	if m.showCategory {
-		view = m.category.Render(w+2, h+2)
+		finalView = m.category.Render(contentWidth+2, contentHeight+2)
 	}
 	if m.showInput {
-		view = m.input.Render(w+2, h+2)
+		finalView = m.input.Render(contentWidth+2, contentHeight+2)
 	}
-	out := tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, view))
-	out.AltScreen = true
-	return out
+
+	view := tea.NewView(
+		lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, finalView),
+	)
+	view.AltScreen = true
+	view.MouseMode = tea.MouseModeCellMotion
+	return view
 }
-func (m Model) dashboard(w, h int) string {
-	side := w * 3 / 10
-	detailW := w - side - 3
-	body := lipgloss.JoinHorizontal(lipgloss.Top, theme.PanelFocused.Width(side).Height(h-6).Render(m.sidebar.View()), " ", theme.PanelFocused.Width(detailW).Height(h-6).Render(m.detail.View()))
-	return theme.Title.Render("⚡ Windows Config") + "\n\n" + body + "\n\n" + theme.HelpStyle.Render("/: search • i/enter: install • c: category • tab: focus • ?: help • q: quit")
+
+func (m Model) viewDashboard(width, height int) string {
+	focusLabel := "modules"
+	if m.focus == FocusDetail {
+		focusLabel = "detail"
+	}
+	title := theme.Title.Render("⚡ Windows Config") +
+		theme.DimText.Render("  · focus: ") +
+		theme.Subtitle.Render(focusLabel)
+
+	help := theme.HelpStyle.Render(
+		"q: quit • ?: help • j/k: navigate • shift+tab: switch panel • tab: switch tab • i: install • s: search • c: category",
+	)
+
+	panelHeight := height - 5
+	if panelHeight < 10 {
+		panelHeight = 10
+	}
+
+	sidebarWidth := int(float64(width) * 0.3)
+	detailWidth := width - sidebarWidth - 1
+
+	sidebarContent := m.sidebar.View()
+	detailContent := m.detail.View()
+	if m.focus != FocusSidebar {
+		sidebarContent = lipgloss.NewStyle().Faint(true).Render(sidebarContent)
+	}
+	if m.focus != FocusDetail {
+		detailContent = lipgloss.NewStyle().Faint(true).Render(detailContent)
+	}
+
+	sidebarView := framePanel(sidebarContent, m.focus == FocusSidebar, sidebarWidth, panelHeight)
+	detailView := framePanel(detailContent, m.focus == FocusDetail, detailWidth, panelHeight)
+
+	body := lipgloss.JoinHorizontal(lipgloss.Top, sidebarView, " ", detailView)
+	body = theme.Clip(body, width, panelHeight)
+
+	return fmt.Sprintf("%s\n\n%s\n\n%s", title, body, help)
 }
+
+// framePanel draws a fixed-size panel border. Width/Height are TOTAL outer size.
+func framePanel(content string, focused bool, width, height int) string {
+	innerW := width - 2
+	innerH := height - 2
+	if innerW < 1 {
+		innerW = 1
+	}
+	if innerH < 1 {
+		innerH = 1
+	}
+
+	borderColor := theme.ColorSurface
+	if focused {
+		borderColor = theme.ColorCyan
+	}
+
+	clipped := theme.Clip(content, innerW, innerH)
+	framed := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(borderColor).
+		Width(innerW).
+		Render(clipped)
+
+	return theme.Clip(framed, width, height)
+}
+
 func expandHome(path string) string {
 	path = strings.TrimSpace(path)
 	if path == "~" || strings.HasPrefix(path, "~/") {
 		if home, err := os.UserHomeDir(); err == nil {
-			return filepath.Join(home, strings.TrimPrefix(path, "~/"))
+			if path == "~" {
+				return home
+			}
+			return filepath.Join(home, path[2:])
 		}
 	}
 	return path

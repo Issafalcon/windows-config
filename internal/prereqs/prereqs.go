@@ -1,6 +1,7 @@
 package prereqs
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 
@@ -20,10 +21,11 @@ type checklistMsg struct {
 }
 
 type Model struct {
-	git     bool
-	pwsh    bool
-	checked bool
-	help    help.Model
+	width, height int
+	git           bool
+	pwsh          bool
+	checked       bool
+	help          help.Model
 }
 
 type keyMap struct{}
@@ -33,10 +35,7 @@ var quitKey = key.NewBinding(
 	key.WithHelp("q", "quit"),
 )
 
-func (keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{quitKey}
-}
-
+func (keyMap) ShortHelp() []key.Binding { return []key.Binding{quitKey} }
 func (keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{{quitKey}}
 }
@@ -53,9 +52,11 @@ func (m Model) Init() tea.Cmd {
 	}
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.WindowSizeMsg:
+		m.width, m.height = msg.Width, msg.Height
+	case tea.KeyPressMsg:
 		if key.Matches(msg, quitKey) {
 			return m, tea.Quit
 		}
@@ -68,23 +69,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) View() tea.View {
-	status := func(ok bool) string {
-		if !m.checked {
-			return theme.DimText.Render("checking")
+// View returns checklist content for the root app to embed in AppBorder.
+func (m Model) View() string {
+	row := func(name string, ok bool) string {
+		status := theme.DimText.Render("checking…")
+		if m.checked {
+			if ok {
+				status = theme.SuccessText.Render("✓ installed")
+			} else {
+				status = theme.ErrorText.Render("✗ missing")
+			}
 		}
-		if ok {
-			return theme.SuccessText.Render("✓ installed")
-		}
-		return theme.ErrorText.Render("✗ missing")
+		return fmt.Sprintf("  %-6s %s", name, status)
 	}
-	body := strings.Join([]string{
+
+	return strings.Join([]string{
 		theme.Title.Render("Prerequisites"),
+		theme.DimText.Render("Git for Windows + PowerShell 7 (pwsh)"),
 		"",
-		"  git   " + status(m.git),
-		"  pwsh  " + status(m.pwsh),
+		row("git", m.git),
+		row("pwsh", m.pwsh),
 		"",
 		theme.HelpStyle.Render(m.help.View(keyMap{})),
 	}, "\n")
-	return tea.NewView(theme.PanelFocused.Render(body))
 }
