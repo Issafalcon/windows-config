@@ -1,0 +1,7 @@
+name: wezterm
+description: WezTerm terminal emulator
+category: Terminal
+dependencies: [scoop]
+requires_admin: false
+check_command: Get-Command wezterm -ErrorAction SilentlyContinue
+estimated_time: 2 min

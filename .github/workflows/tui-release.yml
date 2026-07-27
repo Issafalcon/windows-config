@@ -1,0 +1,126 @@
+# Windows Config TUI — CI/CD
+#
+# Triggers:
+#   - Push / PR to main: build + test + Windows exe
+#   - Tag v*: same + GitHub Release (zip with .exe + ElevatedHelper)
+#   - workflow_dispatch: same as push (release only on v* tags)
+
+name: Windows Config TUI CI/CD
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Test
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build Windows amd64
+        env:
+          CGO_ENABLED: "0"
+          GOOS: windows
+          GOARCH: amd64
+        run: |
+          mkdir -p dist/windows-amd64/tools
+          go build -trimpath -ldflags="-s -w" \
+            -o dist/windows-amd64/windows-config-tui.exe ./tui/
+          cp tools/ElevatedHelper.ps1 dist/windows-amd64/tools/
+
+      - name: Build Windows arm64
+        env:
+          CGO_ENABLED: "0"
+          GOOS: windows
+          GOARCH: arm64
+        run: |
+          mkdir -p dist/windows-arm64/tools
+          go build -trimpath -ldflags="-s -w" \
+            -o dist/windows-arm64/windows-config-tui.exe ./tui/
+          cp tools/ElevatedHelper.ps1 dist/windows-arm64/tools/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-config-tui-binaries
+          path: dist/
+          if-no-files-found: error
+
+  release:
+    name: GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-config-tui-binaries
+          path: dist
+
+      - name: Package zips
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          for arch in amd64 arm64; do
+            (
+              cd "dist/windows-${arch}"
+              zip -r "../../release/windows-config-tui-${VERSION}-windows-${arch}.zip" .
+            )
+          done
+          cd release
+          sha256sum *.zip > "checksums-${VERSION}.sha256"
+          ls -la
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Windows Config TUI ${{ github.ref_name }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          body: |
+            ## Install (no Go required)
+
+            1. Download `windows-config-tui-*-windows-amd64.zip` (or `arm64` on Snapdragon/ARM PCs)
+            2. Unzip anywhere (keep `tools\ElevatedHelper.ps1` next to the exe)
+            3. Clone this repo so you have a `modules/` folder (or set `WINDOWS_CONFIG_MODULES_DIR`)
+            4. Run `windows-config-tui.exe` in Windows Terminal / PowerShell 7
+
+            Prerequisites: Git for Windows, PowerShell 7 (`pwsh`). Developer Mode recommended for user-profile symlinks.
+          files: |
+            release/windows-config-tui-${{ github.ref_name }}-windows-amd64.zip
+            release/windows-config-tui-${{ github.ref_name }}-windows-arm64.zip
+            release/checksums-${{ github.ref_name }}.sha256

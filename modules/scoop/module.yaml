@@ -1,0 +1,7 @@
+name: scoop
+description: Scoop package manager for Windows
+category: Core
+dependencies: []
+requires_admin: false
+check_command: Get-Command scoop -ErrorAction SilentlyContinue
+estimated_time: 1-2 min

@@ -1,9 +1,11 @@
 param (
-  $installationdrive = "C", 
+  $installationdrive = "C",
   $modulename
 )
 
+# DEPRECATED: prefer the Windows Config TUI (see README). Kept for one-off scripting.
 $scriptDir = $(Split-Path -parent $MyInvocation.MyCommand.Definition)
+$modulesDir = Join-Path $scriptDir "modules"
 
 function Install-NeededFor
 {
@@ -12,18 +14,18 @@ function Install-NeededFor
     , [bool] $defaultAnswer = $true
   )
   if ($packageName -eq '')
-  { return $false 
+  { return $false
   }
-  
+
   $yes = '6'
   $no = '7'
   $msgBoxTimeout = '-1'
   $defaultAnswerDisplay = 'Yes'
   $buttonType = 0x4;
   if (!$defaultAnswer)
-  { $defaultAnswerDisplay = 'No'; $buttonType = 0x104; 
+  { $defaultAnswerDisplay = 'No'; $buttonType = 0x104;
   }
-  
+
   $answer = $msgBoxTimeout
   try
   {
@@ -34,13 +36,13 @@ function Install-NeededFor
   } catch
   {
   }
-  
+
   if ($answer -eq $yes -or ($answer -eq $msgBoxTimeout -and $defaultAnswer -eq $true))
   {
     write-host "Installing $packageName"
     return $true
   }
-  
+
   write-host "Not installing $packageName"
   return $false
 }
@@ -67,21 +69,22 @@ if ($modulename -eq "all")
     'git',
     'scoop',
     'wezterm',
-    # Neovim module install python3 and node modules as part of it
+    'python3',
+    'node',
     'neovim',
     'dotnet',
     'omnisharp',
-    'powershell', 
+    'powershell',
     'lazygit'
   )
   foreach ($module in $moduleOrder)
   {
     if (Install-NeededFor $module)
     {
-      InstallModule -moduleDir "${scriptDir}\$module"
+      InstallModule -moduleDir "${modulesDir}\$module"
     }
   }
 } else
 {
-  InstallModule -moduleDir "${scriptDir}\$modulename"
+  InstallModule -moduleDir "${modulesDir}\$modulename"
 }
