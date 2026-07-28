@@ -263,6 +263,7 @@ var ModuleIcons = map[string]string{
 	"dotnet":           "󰪮",
 	"cpp":              "",
 	"powershell":       "󰨊",
+	"oh-my-posh":       "󰨊",
 	"scoop":            "󰏖",
 	"windows":          "󰍲",
 	"winget":           "󰏖",

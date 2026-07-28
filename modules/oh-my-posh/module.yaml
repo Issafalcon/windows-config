@@ -1,0 +1,7 @@
+name: oh-my-posh
+description: Oh My Posh prompt + PS profile modules
+category: Terminal
+dependencies: [powershell]
+requires_admin: false
+check_command: Get-Command oh-my-posh -ErrorAction SilentlyContinue
+estimated_time: 1-2 min

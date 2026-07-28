@@ -1,5 +1,5 @@
 ###################################################################
-# Windows Powershell (CurrentUser — no admin)
+# Oh My Posh + PowerShell profile (CurrentUser — no admin)
 ###################################################################
 
 winget install JanDeDobbeleer.OhMyPosh -s winget --accept-package-agreements --accept-source-agreements
