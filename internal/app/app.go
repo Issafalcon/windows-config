@@ -62,15 +62,16 @@ func NewModel() Model {
 	return Model{state: StatePrereqCheck, focus: FocusSidebar, prereq: prereqs.New(), sidebar: sidebar.NewModel(items(), 30, 30), detail: detail.NewModel(60, 30), help: popup.NewHelpPopup(nil)}
 }
 func items() []sidebar.ModuleItem {
-	installed, _ := utils.GetInstalledModules()
-	set := map[string]bool{}
-	for _, n := range installed {
-		set[n] = true
-	}
 	all := module.DefaultRegistry.All()
 	out := make([]sidebar.ModuleItem, 0, len(all))
 	for _, m := range all {
-		out = append(out, sidebar.ModuleItem{Name: m.Name, Icon: m.Icon, Description: m.Description, Category: m.Category, Installed: set[m.Name]})
+		out = append(out, sidebar.ModuleItem{
+			Name:        m.Name,
+			Icon:        m.Icon,
+			Description: m.Description,
+			Category:    m.Category,
+			Installed:   utils.ModuleSatisfied(m.Name, m.CheckCommand),
+		})
 	}
 	return out
 }
@@ -128,17 +129,33 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.showConfirm = false
 		m.detail.SetActiveTab(detail.TabOutput)
 		m.detail.OutputModel().Clear()
-		queue, err := planInstallQueue(v.ModuleName)
-		if err != nil {
-			m.detail.OutputModel().AppendLine("✗ Could not plan install: " + err.Error())
-			return m, nil
+
+		var queue []string
+		var err error
+		if v.Action == popup.ActionReinstall {
+			queue = []string{v.ModuleName}
+			m.detail.OutputModel().AppendLine(
+				fmt.Sprintf("Force re-run: %s (deps skipped)", v.ModuleName))
+		} else {
+			queue, err = planInstallQueue(v.ModuleName)
+			if err != nil {
+				m.detail.OutputModel().AppendLine("✗ Could not plan install: " + err.Error())
+				return m, nil
+			}
+			if len(queue) == 0 {
+				m.detail.OutputModel().AppendLine(
+					fmt.Sprintf("✓ %s and its dependencies are already satisfied", v.ModuleName))
+				m.detail.OutputModel().AppendLine(
+					"  Tip: press r to force re-run this module's install scripts")
+				m.sidebar.SetInstalled(v.ModuleName, true)
+				return m, nil
+			}
 		}
-		if len(queue) == 0 {
-			m.detail.OutputModel().AppendLine("✓ already installed")
-			return m, nil
-		}
+
 		m.state = StateInstalling
 		m.queue = queue[1:]
+		m.detail.OutputModel().AppendLine(
+			fmt.Sprintf("Install plan (%d): %s", len(queue), strings.Join(queue, " → ")))
 		return m.begin(queue[0])
 	case popup.ConfirmNoMsg:
 		m.showConfirm = false
@@ -175,6 +192,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.sidebar.SetInstalled(v.ModuleName, true)
 		m.detail.OutputModel().AppendLine("✓ " + v.ModuleName + " installed successfully!")
+		if m.selected != "" {
+			m.updateDetail(m.selected)
+		}
 		if len(m.queue) > 0 {
 			next := m.queue[0]
 			m.queue = m.queue[1:]
@@ -275,6 +295,8 @@ func (m Model) updateDashboard(msg tea.Msg) (tea.Model, tea.Cmd) {
 					list := []string{mod.Name + " — " + mod.Description}
 					if err != nil {
 						list = append(list, "✗ "+err.Error())
+					} else if len(queue) == 0 {
+						list = append(list, "  (already satisfied — press r to re-run)")
 					} else {
 						for _, name := range queue {
 							if name != m.selected {
@@ -287,6 +309,17 @@ func (m Model) updateDashboard(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.showConfirm = true
 					return m, nil
 				}
+			}
+		case key.Matches(k, DefaultKeyMap.Reinstall):
+			if m.selected != "" {
+				has := utils.ModuleScriptExists(m.selected, "install.ps1") ||
+					utils.ModuleScriptExists(m.selected, "config.ps1")
+				if !has {
+					return m, nil
+				}
+				m.confirm = popup.NewReinstallDialog(m.selected, has)
+				m.showConfirm = true
+				return m, nil
 			}
 		}
 	}
@@ -447,7 +480,7 @@ func (m Model) viewDashboard(width, height int) string {
 		theme.Subtitle.Render(focusLabel)
 
 	help := theme.HelpStyle.Render(
-		"q: quit • ?: help • j/k: navigate • shift+tab: switch panel • tab: switch tab • i: install • s: search • c: category",
+		"q: quit • ?: help • j/k: navigate • shift+tab: switch panel • tab: switch tab • i: install • r: re-run • s: search • c: category",
 	)
 
 	panelHeight := height - 5

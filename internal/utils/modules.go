@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -70,6 +71,12 @@ func SetModuleUninstalled(name string) error {
 	return writeInstalledModules(filtered)
 }
 
+// ModuleSatisfied reports whether a module should be skipped by the install queue.
+//
+//  1. Name listed in ~/.windowsConfigModules
+//  2. check_command succeeds under pwsh (see wrapCheckCommand)
+//
+// Literals "true"/"false"/"" skip (2) — tracking-file only.
 func ModuleSatisfied(name, checkCommand string) bool {
 	installed, err := GetInstalledModules()
 	if err == nil && contains(installed, name) {
@@ -86,7 +93,18 @@ func ModuleSatisfied(name, checkCommand string) bool {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), checkTimeout)
 	defer cancel()
-	return exec.CommandContext(ctx, pwsh, "-NoProfile", "-Command", checkCommand).Run() == nil
+	cmd := exec.CommandContext(ctx, pwsh, "-NoProfile", "-Command", wrapCheckCommand(checkCommand))
+	return cmd.Run() == nil
+}
+
+// wrapCheckCommand makes PowerShell probes fail when they "succeed" with no result.
+// `Get-Command foo -ErrorAction SilentlyContinue` exits 0 even when missing; wrapping
+// treats a null/false result as failure while still honouring native exit codes.
+func wrapCheckCommand(check string) string {
+	return fmt.Sprintf(
+		`$ErrorActionPreference = 'Continue'; $__result = $(%s); if ($null -ne $LASTEXITCODE -and $LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; if ($null -eq $__result -or $__result -eq $false) { exit 1 }; exit 0`,
+		check,
+	)
 }
 
 func FindPwsh() (string, error) {

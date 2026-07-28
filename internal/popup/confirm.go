@@ -72,7 +72,7 @@ func NewReinstallDialog(moduleName string, hasScript bool) ConfirmModel {
 		moduleName: moduleName,
 		action:     ActionReinstall,
 		items: []string{
-			"Re-run install.sh (and stow if enabled)",
+			"Re-run install.ps1 / config.ps1",
 			"Ignores installed / satisfied status",
 			"Dependencies are not reinstalled",
 		},
