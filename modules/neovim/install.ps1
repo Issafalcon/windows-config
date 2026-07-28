@@ -35,4 +35,6 @@ scoop install win32yank
 
 # python3 / node come from module.yaml dependencies (install via TUI queue)
 
-npm install tree-sitter-cli -g
+# npm v12+ blocks dependency install scripts unless allowlisted (global installs
+# use --allow-scripts; tree-sitter-cli needs its install.js to fetch the binary).
+npm install -g tree-sitter-cli --allow-scripts=tree-sitter-cli
