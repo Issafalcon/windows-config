@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -65,16 +66,18 @@ func SetModulesDir(modulesDir string) error {
 	if err != nil {
 		return err
 	}
-	cfg.ModulesDir = modulesDir
+	cfg.ModulesDir = NormalizeModulesDir(modulesDir)
 	return Save(cfg)
 }
 
 func ResolveModulesDir() string {
 	if dir := os.Getenv("WINDOWS_CONFIG_MODULES_DIR"); dir != "" {
-		return dir
+		return NormalizeModulesDir(dir)
 	}
 	if cfg, err := Load(); err == nil && cfg.ModulesDir != "" {
-		return cfg.ModulesDir
+		if dir := NormalizeModulesDir(cfg.ModulesDir); dir != "" {
+			return dir
+		}
 	}
 	for _, start := range searchRoots() {
 		if dir := findModulesDir(start); dir != "" {
@@ -82,6 +85,47 @@ func ResolveModulesDir() string {
 		}
 	}
 	return ""
+}
+
+// ExpandHome expands a leading ~ / ~/ / ~\ to the user home directory.
+func ExpandHome(path string) string {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return ""
+	}
+	path = os.ExpandEnv(path)
+	if path == "~" {
+		if home, err := os.UserHomeDir(); err == nil {
+			return home
+		}
+		return path
+	}
+	if strings.HasPrefix(path, "~/") || strings.HasPrefix(path, `~\`) {
+		if home, err := os.UserHomeDir(); err == nil {
+			return filepath.Join(home, path[2:])
+		}
+	}
+	return path
+}
+
+// NormalizeModulesDir expands home shortcuts and, if the path is a repo root
+// that contains modules/, returns that modules/ directory.
+func NormalizeModulesDir(path string) string {
+	path = ExpandHome(path)
+	if path == "" {
+		return ""
+	}
+	path = filepath.Clean(path)
+	if abs, err := filepath.Abs(path); err == nil {
+		path = abs
+	}
+	if base := filepath.Base(path); !strings.EqualFold(base, "modules") {
+		candidate := filepath.Join(path, "modules")
+		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
+			return candidate
+		}
+	}
+	return path
 }
 
 func searchRoots() []string {

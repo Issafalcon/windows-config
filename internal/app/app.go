@@ -3,7 +3,6 @@ package app
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"charm.land/bubbles/v2/key"
@@ -98,7 +97,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case popup.InputSubmitMsg:
 		if m.state == StateModulesSetup {
-			path := expandHome(v.Value)
+			path := config.ExpandHome(v.Value)
 			if path == "" {
 				return m, nil
 			}
@@ -539,17 +538,4 @@ func framePanel(content string, focused bool, width, height int) string {
 		Render(clipped)
 
 	return theme.Clip(framed, width, height)
-}
-
-func expandHome(path string) string {
-	path = strings.TrimSpace(path)
-	if path == "~" || strings.HasPrefix(path, "~/") {
-		if home, err := os.UserHomeDir(); err == nil {
-			if path == "~" {
-				return home
-			}
-			return filepath.Join(home, path[2:])
-		}
-	}
-	return path
 }
