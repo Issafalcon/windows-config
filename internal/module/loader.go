@@ -32,7 +32,9 @@ func LoadFromDir(modulesDir string) (*Registry, error) {
 
 		var m Module
 		if err := yaml.Unmarshal(data, &m); err != nil {
-			return nil, fmt.Errorf("parse %s: %w", path, err)
+			// Skip broken module.yaml so one bad file doesn't empty the sidebar
+			// (reload ignores LoadFromDir errors).
+			continue
 		}
 		m.Name = entry.Name()
 		if err := registry.Register(m); err != nil {

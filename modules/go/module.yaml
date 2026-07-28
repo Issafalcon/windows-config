@@ -1,0 +1,7 @@
+name: go
+description: Go toolchain for Windows
+category: Language
+dependencies: []
+requires_admin: false
+check_command: Get-Command go -ErrorAction SilentlyContinue
+estimated_time: 2-3 min

@@ -3,7 +3,8 @@ description: Visual Studio Enterprise (winget) with ASP.NET/Web API, Copilot, Re
 category: IDE
 dependencies: []
 requires_admin: true
-check_command: & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -products Microsoft.VisualStudio.Product.Enterprise -latest -property installationPath
+# Quoted: leading & is the PowerShell call operator; unquoted YAML treats & as an anchor.
+check_command: '& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -products Microsoft.VisualStudio.Product.Enterprise -latest -property installationPath'
 estimated_time: 45-90 min
 estimated_size: 10+ GB
 website: https://visualstudio.microsoft.com/

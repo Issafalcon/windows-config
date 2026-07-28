@@ -239,7 +239,7 @@ var ModuleIcons = map[string]string{
 	"docker":           "",
 	"node":             "",
 	"python":           "",
-	"go":               "",
+	"go":               "",
 	"rust":             "",
 	"lua":              "",
 	"kubernetes":       "󱃾",

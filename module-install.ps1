@@ -71,10 +71,12 @@ if ($modulename -eq "all")
     'wezterm',
     'python3',
     'node',
+    'go',
     'neovim',
     'dotnet',
     'omnisharp',
     'powershell',
+    'oh-my-posh',
     'lazygit'
   )
   foreach ($module in $moduleOrder)
