@@ -29,7 +29,7 @@ func RunInstallStreaming(p *tea.Program, mod module.Module, elevateClient *eleva
 	return func() tea.Msg {
 		moduleName := mod.Name
 		p.Send(InstallStartMsg{moduleName})
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Hour)
 		defer cancel()
 
 		run := func(script string) error {
