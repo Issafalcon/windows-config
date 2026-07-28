@@ -3,6 +3,5 @@ description: Python 3.11 via scoop
 category: Language
 dependencies: [scoop]
 requires_admin: false
-admin_scripts: [install.ps1]
 check_command: Get-Command python311 -ErrorAction SilentlyContinue
 estimated_time: 2-3 min

@@ -46,7 +46,7 @@ Elevated work goes through a session helper (`tools/ElevatedHelper.ps1`):
 - Later admin jobs in the same TUI session reuse the helper (no more UAC)
 - Quitting the TUI shuts the helper down
 
-Without elevation, user-profile symlinks need **Windows Developer Mode**. Modules that create links list `admin_scripts: [config.ps1]` so the TUI elevates those steps for you.
+Without elevation, user-profile **file** symlinks need **Windows Developer Mode**. Modules that create those links list `admin_scripts: [config.ps1]` so the TUI elevates those steps for you. Scoop-based `install.ps1` scripts stay unelevated — Scoop refuses / breaks under admin.
 
 ### Layout
 

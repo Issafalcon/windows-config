@@ -3,30 +3,31 @@ param (
   [switch] $createneovimenv = $false
 )
 
-# Python and required pip modules
+# Scoop must run unelevated (admin sessions abort / break user-scoped installs).
 scoop bucket add versions
 scoop install python311
 python311 -m pip install --upgrade pip
 
 $currentDir = Get-Location
 
-if ($createneovimenv -eq $true)
-{
-  Set-Location "${installationdrive}:\Applications\Scoop\apps\neovim"
-  mkdir python3 -Force
-  Set-Location python3
-  mkdir Envs -Force
-  Set-Location Envs
+if ($createneovimenv) {
+  $venvRoot = "${installationdrive}:\Applications\Scoop\apps\neovim\python3"
+  $venvPath = Join-Path $venvRoot "Envs\neovim"
+  New-Item -ItemType Directory -Force -Path (Join-Path $venvRoot "Envs") | Out-Null
 
-  python311 -m venv neovim # Create the virtual env for python3
-  .\neovim\Scripts\activate
-  py -m pip install pynvim
-  py -m pip install neovim
-  py -m pip install neovim-remote
+  python311 -m venv $venvPath
+  & (Join-Path $venvPath "Scripts\Activate.ps1")
+  python -m pip install pynvim neovim neovim-remote
   deactivate
 
-  mkdir "~/AppData/Local/python3/Envs" -Force
-  New-Item -ItemType SymbolicLink -Path "~/AppData/Local/python3/Envs/neovim" -Target  "${installationdrive}:\Applications\Scoop\apps\neovim\python3\Envs\neovim" -Force
+  # Directory junction: no admin / Developer Mode required (unlike SymbolicLink).
+  $linkParent = Join-Path $HOME "AppData\Local\python3\Envs"
+  $linkPath = Join-Path $linkParent "neovim"
+  New-Item -ItemType Directory -Force -Path $linkParent | Out-Null
+  if (Test-Path $linkPath) {
+    Remove-Item -Force -Recurse $linkPath
+  }
+  New-Item -ItemType Junction -Path $linkPath -Target $venvPath | Out-Null
 }
 
 Set-Location $currentDir
