@@ -3,5 +3,6 @@ description: WezTerm terminal emulator
 category: Terminal
 dependencies: [scoop]
 requires_admin: false
+admin_scripts: [config.ps1]
 check_command: Get-Command wezterm -ErrorAction SilentlyContinue
 estimated_time: 2 min

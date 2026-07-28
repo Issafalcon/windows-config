@@ -339,7 +339,13 @@ func (m Model) begin(name string) (tea.Model, tea.Cmd) {
 		}
 	}
 	m.detail.OutputModel().AppendLine("▸ Installing " + name + "...")
-	return m, installer.RunInstallStreaming(m.program, name, mod.RequiresAdmin, &m.elevate)
+	if len(mod.AdminScripts) > 0 {
+		m.detail.OutputModel().AppendLine(
+			"  elevated scripts: " + strings.Join(mod.AdminScripts, ", "))
+	} else if mod.RequiresAdmin {
+		m.detail.OutputModel().AppendLine("  (entire module runs elevated)")
+	}
+	return m, installer.RunInstallStreaming(m.program, mod, &m.elevate)
 }
 func (m *Model) reload() {
 	_, _ = module.LoadFromDir(utils.GetModulesDir())

@@ -3,5 +3,6 @@ description: Neovim via scoop + toolchain
 category: Editor
 dependencies: [scoop, python3, node]
 requires_admin: false
+admin_scripts: [config.ps1]
 check_command: Get-Command nvim -ErrorAction SilentlyContinue
 estimated_time: 5-10 min

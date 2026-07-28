@@ -3,5 +3,6 @@ description: Vim / IdeaVim rc symlinks
 category: Editor
 dependencies: []
 requires_admin: false
+admin_scripts: [config.ps1]
 check_command: false
 estimated_time: 1 min

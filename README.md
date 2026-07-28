@@ -35,13 +35,18 @@ Override the modules path with `WINDOWS_CONFIG_MODULES_DIR` or the first-run pat
 
 ### Elevation model
 
-The TUI always starts **unelevated**. Modules that set `requires_admin: true` in `module.yaml` are run through a session **elevated helper** (`tools/ElevatedHelper.ps1`):
+The TUI always starts **unelevated**. Privilege is requested only for scripts that need it:
 
-- First admin job → one UAC prompt
+- `admin_scripts: [config.ps1]` — elevate that script only (typical for **symbolic links**); `install.ps1` stays user-scoped (scoop-friendly)
+- `requires_admin: true` — elevate both `install.ps1` and `config.ps1` when `admin_scripts` is empty
+
+Elevated work goes through a session helper (`tools/ElevatedHelper.ps1`):
+
+- First admin job → one UAC prompt (`pwsh -Verb RunAs`)
 - Later admin jobs in the same TUI session reuse the helper (no more UAC)
 - Quitting the TUI shuts the helper down
 
-Most modules use **User**-scoped env vars and profile links so they do **not** need admin. Prefer Developer Mode for symlinks under your profile.
+Without elevation, user-profile symlinks need **Windows Developer Mode**. Modules that create links list `admin_scripts: [config.ps1]` so the TUI elevates those steps for you.
 
 ### Layout
 
@@ -68,4 +73,4 @@ windows-config/
 .\module-install.ps1 -modulename neovim
 ```
 
-Scripts no longer self-elevate with `Start-Process -Verb RunAs`; elevation is the TUI helper’s job when a module declares `requires_admin`.
+Scripts no longer self-elevate with `Start-Process -Verb RunAs`; elevation is the TUI helper’s job via `admin_scripts` / `requires_admin`.

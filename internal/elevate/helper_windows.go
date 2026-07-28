@@ -41,13 +41,36 @@ func (c *Client) EnsureStarted() error {
 	}
 	c.JobDir = dir
 	quote := func(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" }
-	command := fmt.Sprintf("Start-Process -FilePath pwsh -Verb RunAs -ArgumentList @('-NoProfile','-File',%s,'-JobDir',%s)", quote(helper), quote(dir))
-	if err := exec.Command("powershell", "-NoProfile", "-Command", command).Run(); err != nil {
+	pwsh, err := exec.LookPath("pwsh")
+	if err != nil {
+		pwsh, err = exec.LookPath("powershell")
+	}
+	if err != nil {
+		c.JobDir = ""
+		_ = os.RemoveAll(dir)
+		return fmt.Errorf("pwsh/powershell not found: %w", err)
+	}
+	command := fmt.Sprintf(
+		"Start-Process -FilePath %s -Verb RunAs -ArgumentList @('-NoProfile','-File',%s,'-JobDir',%s)",
+		quote(pwsh), quote(helper), quote(dir),
+	)
+	if err := exec.Command(pwsh, "-NoProfile", "-Command", command).Run(); err != nil {
 		c.JobDir = ""
 		_ = os.RemoveAll(dir)
 		return fmt.Errorf("start elevated helper: %w", err)
 	}
-	return nil
+	// Wait until the elevated helper writes its ready marker (UAC may take a moment).
+	deadline := time.Now().Add(2 * time.Minute)
+	ready := filepath.Join(dir, "ready")
+	for time.Now().Before(deadline) {
+		if _, err := os.Stat(ready); err == nil {
+			return nil
+		}
+		time.Sleep(150 * time.Millisecond)
+	}
+	c.JobDir = ""
+	_ = os.RemoveAll(dir)
+	return fmt.Errorf("elevated helper did not start (UAC cancelled or timed out)")
 }
 
 func (c *Client) RunScript(ctx context.Context, scriptPath string, args []string, onLine func(string, bool)) error {

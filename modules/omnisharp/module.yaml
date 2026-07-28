@@ -3,5 +3,6 @@ description: OmniSharp formatting config
 category: Editor
 dependencies: [dotnet]
 requires_admin: false
+admin_scripts: [config.ps1]
 check_command: false
 estimated_time: 1 min
