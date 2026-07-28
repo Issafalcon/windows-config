@@ -235,6 +235,7 @@ var ModuleIcons = map[string]string{
 	"neovim":           "",
 	"zsh":              "",
 	"git":              "",
+	"gh":               "",
 	"tmux":             "",
 	"docker":           "",
 	"node":             "",

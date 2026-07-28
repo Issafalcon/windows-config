@@ -16,6 +16,12 @@ if ($installationdrive -ne "C") {
 scoop bucket add main
 scoop install mingw
 
+# nvim-treesitter (main) shells out to `tree-sitter build` → cc-rs, which on
+# Windows defaults to cl.exe. VS may be installed without cl on PATH; scoop
+# mingw's gcc is what we ship, so point the compiler at it.
+[System.Environment]::SetEnvironmentVariable('CC', 'gcc', 'User')
+[System.Environment]::SetEnvironmentVariable('CXX', 'g++', 'User')
+
 # Go
 scoop install go
 

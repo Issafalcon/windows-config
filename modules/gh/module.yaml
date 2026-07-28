@@ -1,0 +1,7 @@
+name: gh
+description: GitHub CLI
+category: Tool
+dependencies: [scoop]
+requires_admin: false
+check_command: Get-Command gh -ErrorAction SilentlyContinue
+estimated_time: 1 min

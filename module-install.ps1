@@ -72,6 +72,7 @@ if ($modulename -eq "all")
     'python3',
     'node',
     'go',
+    'gh',
     'neovim',
     'dotnet',
     'omnisharp',
