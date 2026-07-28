@@ -2,14 +2,13 @@ gui:
   scrollHeight: 8
   scrollPastBottom: true
   mouseEvents: true
-  showIcons: true
+  nerdFontsVersion: "3"
   skipDiscardChangeWarning: false
   skipStashWarning: true
   sidePanelWidth: 0.3333
   expandFocusedSidePanel: false
   mainPanelSplitMode: flexible
   theme:
-    lightTheme: false
     activeBorderColor:
       - green
       - bold
@@ -19,12 +18,10 @@ gui:
       - blue
     selectedLineBgColor:
       - default
-    selectedRangeBgColor:
-      - blue
   commitLength:
     show: true
   skipNoStagedFilesWarning: false
-  showFileTree: false
+  showFileTree: true
   showRandomTip: true
   showCommandLog: true
   commandLogSize: 8
@@ -165,7 +162,6 @@ keybinding:
     pasteCommits: v
     tagCommit: T
     checkoutCommit: <space>
-    resetCherryPick: <c-R>
     copyCommitMessageToClipboard: <c-y>
   stash:
     popStash: g
@@ -186,26 +182,26 @@ os:
   openLink: sh -c "xdg-open {{link}} >/dev/null"
 disableStartupPopups: false
 customCommands:
-  - key: '<c-a>' # Out of sane keybindings in commits context :(
-    description: 'Search the whole history (From a ref and down) for an expression in a file'
+  - key: "<c-a>" # Out of sane keybindings in commits context :(
+    description: "Search the whole history (From a ref and down) for an expression in a file"
     command: "git checkout {{index .PromptResponses 3}}"
-    context: 'commits'
+    context: "commits"
     prompts:
-      - type: 'input'
-        title: 'Search word:'
-      - type: 'input'
-        title: 'File/Subtree:'
-      - type: 'input'
-        title: 'Ref:'
+      - type: "input"
+        title: "Search word:"
+      - type: "input"
+        title: "File/Subtree:"
+      - type: "input"
+        title: "Ref:"
         initialValue: "{{index .CheckedOutBranch.Name }}"
-      - type: 'menuFromCommand'
-        title: 'Commits:'
+      - type: "menuFromCommand"
+        title: "Commits:"
         command: "git log --oneline --graph {{index .PromptResponses 2}} -S'{{index .PromptResponses 0}}' --all -- {{index .PromptResponses 1}}"
-        filter: '(?P<commit_id>[0-9a-zA-Z]+) .*' # or just '(?P<commit_id>.*)' to catch commit descriptions too
-        format: '{{ .commit_id }}'
-  - key: '<c-g>' # Out of sane keybindings in files context :(
-    description: 'Set the GPG_TTY value correctly so WSL terminal multiplexers can prompt for password on signed commits'
+        filter: "(?P<commit_id>[0-9a-zA-Z]+) .*" # or just '(?P<commit_id>.*)' to catch commit descriptions too
+        format: "{{ .commit_id }}"
+  - key: "<c-g>" # Out of sane keybindings in files context :(
+    description: "Set the GPG_TTY value correctly so WSL terminal multiplexers can prompt for password on signed commits"
     command: "export GPG_TTY=$(tty)"
-    context: 'files'
+    context: "files"
 services: {}
 notARepository: prompt
