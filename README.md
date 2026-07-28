@@ -7,7 +7,7 @@ Collection of configuration files and scripts for a Windows 10+ dev environment,
 1. **Git for Windows** (install manually first)
 2. **PowerShell 7** (`pwsh`) — `winget install Microsoft.PowerShell`
 3. Clone this repo (typically `~/repos/windows-config`)
-4. Optional but recommended: enable **Windows Developer Mode** (Settings → Privacy & security → For developers) so user-profile **symbolic links** work without elevation
+4. Optional: enable **Windows Developer Mode** only if you still want classic symbolic links; the bundled modules use hard links / junctions instead
 
 ## TUI (preferred)
 
@@ -37,16 +37,17 @@ Override the modules path with `WINDOWS_CONFIG_MODULES_DIR` or the first-run pat
 
 The TUI always starts **unelevated**. Privilege is requested only for scripts that need it:
 
-- `admin_scripts: [config.ps1]` — elevate that script only (typical for **symbolic links**); `install.ps1` stays user-scoped (scoop-friendly)
+- `admin_scripts: [config.ps1]` — elevate that script only (rare machine-wide changes)
 - `requires_admin: true` — elevate both `install.ps1` and `config.ps1` when `admin_scripts` is empty
 
-Elevated work goes through a session helper (`tools/ElevatedHelper.ps1`):
+Most profile config uses **hard links** (files) or **junctions** (directories), which do **not** need admin or Developer Mode. Scoop-based `install.ps1` scripts always stay unelevated — Scoop refuses / breaks under admin.
 
-- First admin job → one UAC prompt (`pwsh -Verb RunAs`)
+When elevation is required, work goes through a session helper (`tools/ElevatedHelper.ps1`):
+
+- First admin job → one UAC prompt (`pwsh -Verb RunAs`, ExecutionPolicy Bypass)
 - Later admin jobs in the same TUI session reuse the helper (no more UAC)
 - Quitting the TUI shuts the helper down
-
-Without elevation, user-profile **file** symlinks need **Windows Developer Mode**. Modules that create those links list `admin_scripts: [config.ps1]` so the TUI elevates those steps for you. Scoop-based `install.ps1` scripts stay unelevated — Scoop refuses / breaks under admin.
+- Startup/job traces: `%LOCALAPPDATA%\windows-config-tui\elevated-helper.log`
 
 ### Layout
 

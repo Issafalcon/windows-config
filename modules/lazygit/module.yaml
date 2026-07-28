@@ -3,6 +3,5 @@ description: Terminal UI for git
 category: Tool
 dependencies: [scoop]
 requires_admin: false
-admin_scripts: [config.ps1]
 check_command: Get-Command lazygit -ErrorAction SilentlyContinue
 estimated_time: 1 min

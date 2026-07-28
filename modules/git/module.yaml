@@ -3,6 +3,5 @@ description: Git delta pager and themes config
 category: Core
 dependencies: [scoop]
 requires_admin: false
-admin_scripts: [config.ps1]
 check_command: Get-Command delta -ErrorAction SilentlyContinue
 estimated_time: 1 min

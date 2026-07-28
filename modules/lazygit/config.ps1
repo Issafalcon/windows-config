@@ -1,12 +1,15 @@
-$scriptDir = $(Split-Path -parent $MyInvocation.MyCommand.Definition)
-$lazygitConfigDir =  "~/AppData/Roaming/lazygit"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$lazygitConfigDir = Join-Path $HOME "AppData\Roaming\lazygit"
 
-# Symlink config to correct location
-if (Test-Path -Path $lazygitConfigDir) {
-    "$lazygitConfigDir exists. Skipping creation"
-} else {
-  New-Item -ItemType "directory" -Path "~/AppData/Roaming/lazygit"
+if (-not (Test-Path $lazygitConfigDir)) {
+  New-Item -ItemType Directory -Path $lazygitConfigDir | Out-Null
 }
 
-New-Item -ItemType SymbolicLink -Path "~/AppData/Roaming/lazygit/config.yml" -Target "${scriptDir}/config.yml" -Force
-
+$link = Join-Path $lazygitConfigDir "config.yml"
+$target = Join-Path $scriptDir "config.yml"
+if (Test-Path $link) { Remove-Item -Force $link }
+try {
+  New-Item -ItemType HardLink -Path $link -Target $target | Out-Null
+} catch {
+  Copy-Item -Force $target $link
+}

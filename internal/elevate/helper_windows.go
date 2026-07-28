@@ -50,11 +50,14 @@ func (c *Client) EnsureStarted() error {
 		_ = os.RemoveAll(dir)
 		return fmt.Errorf("pwsh/powershell not found: %w", err)
 	}
+	// Single ArgumentList string is more reliable under -Verb RunAs than a
+	// PowerShell array. Bypass + Unblock covers Mark-of-the-Web on zip extracts.
+	argList := fmt.Sprintf(`-NoProfile -ExecutionPolicy Bypass -File "%s" -JobDir "%s"`, helper, dir)
 	command := fmt.Sprintf(
-		"Start-Process -FilePath %s -Verb RunAs -ArgumentList @('-NoProfile','-File',%s,'-JobDir',%s)",
-		quote(pwsh), quote(helper), quote(dir),
+		"Unblock-File -LiteralPath %s -ErrorAction SilentlyContinue; Start-Process -FilePath %s -Verb RunAs -ArgumentList %s",
+		quote(helper), quote(pwsh), quote(argList),
 	)
-	if err := exec.Command(pwsh, "-NoProfile", "-Command", command).Run(); err != nil {
+	if err := exec.Command(pwsh, "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command).Run(); err != nil {
 		c.JobDir = ""
 		_ = os.RemoveAll(dir)
 		return fmt.Errorf("start elevated helper: %w", err)
@@ -70,7 +73,7 @@ func (c *Client) EnsureStarted() error {
 	}
 	c.JobDir = ""
 	_ = os.RemoveAll(dir)
-	return fmt.Errorf("elevated helper did not start (UAC cancelled or timed out)")
+	return fmt.Errorf("elevated helper did not start (UAC cancelled or timed out); see %%LOCALAPPDATA%%\\windows-config-tui\\elevated-helper.log")
 }
 
 func (c *Client) RunScript(ctx context.Context, scriptPath string, args []string, onLine func(string, bool)) error {
