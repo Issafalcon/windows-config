@@ -1,0 +1,8 @@
+name: cursor
+description: Cursor AI code editor
+category: Editor
+dependencies: []
+requires_admin: false
+check_command: Get-Command cursor -ErrorAction SilentlyContinue
+estimated_time: 2-3 min
+website: https://cursor.com/

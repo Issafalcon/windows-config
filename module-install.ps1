@@ -74,6 +74,7 @@ if ($modulename -eq "all")
     'go',
     'gh',
     'neovim',
+    'cursor',
     'dotnet',
     'omnisharp',
     'powershell',

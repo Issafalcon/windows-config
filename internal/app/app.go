@@ -55,6 +55,7 @@ type Model struct {
 	program                                                    *tea.Program
 	elevate                                                    elevate.Client
 	queue                                                      []string
+	uninstalling                                               bool
 }
 
 func NewModel() Model {
@@ -129,8 +130,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.detail.SetActiveTab(detail.TabOutput)
 		m.detail.OutputModel().Clear()
 
+		if v.Action == popup.ActionUninstall {
+			m.state = StateInstalling
+			m.queue = nil
+			m.uninstalling = true
+			m.detail.OutputModel().AppendLine("Uninstall: " + v.ModuleName)
+			return m.beginUninstall(v.ModuleName)
+		}
+
 		var queue []string
 		var err error
+		m.uninstalling = false
 		if v.Action == popup.ActionReinstall {
 			queue = []string{v.ModuleName}
 			m.detail.OutputModel().AppendLine(
@@ -161,7 +171,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case popup.ConfirmReviewMsg:
 		m.showScript = true
-		m.script = popup.NewScriptViewer("Scripts — "+v.ModuleName, reviewScripts(v.ModuleName))
+		m.script = popup.NewScriptViewer("Scripts — "+v.ModuleName, reviewScripts(v.ModuleName, v.Action))
 		return m, nil
 	case popup.ScriptDismissMsg:
 		m.showScript = false
@@ -186,7 +196,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !v.Success {
 			m.state = StateDashboard
 			m.queue = nil
+			m.uninstalling = false
 			m.detail.OutputModel().AppendLine("✗ " + v.ModuleName + " failed: " + v.Error.Error())
+			return m, nil
+		}
+		if m.uninstalling {
+			m.sidebar.SetInstalled(v.ModuleName, false)
+			m.detail.OutputModel().AppendLine("✓ " + v.ModuleName + " uninstalled")
+			m.uninstalling = false
+			if m.selected != "" {
+				m.updateDetail(m.selected)
+			}
+			m.state = StateDashboard
 			return m, nil
 		}
 		m.sidebar.SetInstalled(v.ModuleName, true)
@@ -320,6 +341,21 @@ func (m Model) updateDashboard(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.showConfirm = true
 				return m, nil
 			}
+		case key.Matches(k, DefaultKeyMap.Uninstall):
+			if m.selected != "" {
+				mod, ok := module.DefaultRegistry.Get(m.selected)
+				if !ok {
+					return m, nil
+				}
+				has := utils.ModuleScriptExists(m.selected, "uninstall.ps1")
+				if !has {
+					return m, nil
+				}
+				list := []string{mod.Name + " — " + mod.Description, "Run uninstall.ps1", "Clear install tracking"}
+				m.confirm = popup.NewUninstallDialog(m.selected, list, has)
+				m.showConfirm = true
+				return m, nil
+			}
 		}
 	}
 	var c tea.Cmd
@@ -345,6 +381,19 @@ func (m Model) begin(name string) (tea.Model, tea.Cmd) {
 		m.detail.OutputModel().AppendLine("  (entire module runs elevated)")
 	}
 	return m, installer.RunInstallStreaming(m.program, mod, &m.elevate)
+}
+func (m Model) beginUninstall(name string) (tea.Model, tea.Cmd) {
+	mod, ok := module.DefaultRegistry.Get(name)
+	if !ok {
+		return m, func() tea.Msg {
+			return installer.InstallCompleteMsg{ModuleName: name, Error: fmt.Errorf("unknown module")}
+		}
+	}
+	m.detail.OutputModel().AppendLine("▸ Uninstalling " + name + "...")
+	if mod.ScriptNeedsAdmin("uninstall.ps1") {
+		m.detail.OutputModel().AppendLine("  (uninstall.ps1 runs elevated)")
+	}
+	return m, installer.RunUninstallStreaming(m.program, mod, &m.elevate)
 }
 func (m *Model) reload() {
 	_, _ = module.LoadFromDir(utils.GetModulesDir())
@@ -383,15 +432,19 @@ func planInstallQueue(target string) ([]string, error) {
 	}
 	return todo, nil
 }
-func reviewScripts(name string) string {
+func reviewScripts(name string, action popup.ConfirmAction) string {
+	scripts := []string{"install.ps1", "config.ps1"}
+	if action == popup.ActionUninstall {
+		scripts = []string{"uninstall.ps1"}
+	}
 	var parts []string
-	for _, script := range []string{"install.ps1", "config.ps1"} {
+	for _, script := range scripts {
 		if data, err := os.ReadFile(utils.ModuleScriptPath(name, script)); err == nil {
 			parts = append(parts, "# "+script+"\n"+string(data))
 		}
 	}
 	if len(parts) == 0 {
-		return "(no install.ps1 or config.ps1)"
+		return "(no scripts found)"
 	}
 	return strings.Join(parts, "\n\n")
 }
@@ -485,7 +538,7 @@ func (m Model) viewDashboard(width, height int) string {
 		theme.Subtitle.Render(focusLabel)
 
 	help := theme.HelpStyle.Render(
-		"q: quit • ?: help • j/k: navigate • shift+tab: switch panel • tab: switch tab • i: install • r: re-run • s: search • c: category",
+		"q: quit • ?: help • j/k: navigate • shift+tab: switch panel • tab: switch tab • i: install • r: re-run • d: uninstall • s: search • c: category",
 	)
 
 	panelHeight := height - 5

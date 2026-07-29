@@ -1,0 +1,1 @@
+scoop uninstall python311
