@@ -238,7 +238,7 @@ var ModuleIcons = map[string]string{
 	"git":              "",
 	"gh":               "",
 	"tmux":             "",
-	"docker":           "",
+	"docker":           "󰡨",
 	"node":             "",
 	"python":           "",
 	"go":               "",

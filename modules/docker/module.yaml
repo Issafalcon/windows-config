@@ -1,0 +1,9 @@
+name: docker
+description: Docker Desktop for Windows
+category: Tool
+dependencies: []
+requires_admin: true
+check_command: Get-Command docker -ErrorAction SilentlyContinue
+estimated_time: 5-10 min
+estimated_size: 1+ GB
+website: https://www.docker.com/products/docker-desktop/

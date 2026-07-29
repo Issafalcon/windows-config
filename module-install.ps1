@@ -75,6 +75,7 @@ if ($modulename -eq "all")
     'gh',
     'neovim',
     'cursor',
+    'docker',
     'dotnet',
     'omnisharp',
     'powershell',
