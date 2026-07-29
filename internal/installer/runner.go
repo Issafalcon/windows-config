@@ -26,6 +26,21 @@ type InstallCompleteMsg struct {
 // RunInstallStreaming runs install.ps1 then config.ps1, elevating only the
 // scripts that mod.ScriptNeedsAdmin reports (symlinks / machine changes).
 func RunInstallStreaming(p *tea.Program, mod module.Module, elevateClient *elevate.Client) tea.Cmd {
+	return runModuleScripts(p, mod, elevateClient, []string{"install.ps1", "config.ps1"}, true)
+}
+
+// RunUninstallStreaming runs uninstall.ps1 (if present) then clears install tracking.
+func RunUninstallStreaming(p *tea.Program, mod module.Module, elevateClient *elevate.Client) tea.Cmd {
+	return runModuleScripts(p, mod, elevateClient, []string{"uninstall.ps1"}, false)
+}
+
+func runModuleScripts(
+	p *tea.Program,
+	mod module.Module,
+	elevateClient *elevate.Client,
+	scripts []string,
+	markInstalled bool,
+) tea.Cmd {
 	return func() tea.Msg {
 		moduleName := mod.Name
 		p.Send(InstallStartMsg{moduleName})
@@ -55,14 +70,19 @@ func RunInstallStreaming(p *tea.Program, mod module.Module, elevateClient *eleva
 			return utils.RunPwshFileStreaming(ctx, path, nil, line)
 		}
 
-		if err := run("install.ps1"); err != nil {
-			return InstallCompleteMsg{moduleName, false, fmt.Errorf("install.ps1: %w", err)}
+		for _, script := range scripts {
+			if err := run(script); err != nil {
+				return InstallCompleteMsg{moduleName, false, fmt.Errorf("%s: %w", script, err)}
+			}
 		}
-		if err := run("config.ps1"); err != nil {
-			return InstallCompleteMsg{moduleName, false, fmt.Errorf("config.ps1: %w", err)}
-		}
-		if err := utils.SetModuleInstalled(moduleName); err != nil {
-			return InstallCompleteMsg{moduleName, false, fmt.Errorf("tracking install: %w", err)}
+		if markInstalled {
+			if err := utils.SetModuleInstalled(moduleName); err != nil {
+				return InstallCompleteMsg{moduleName, false, fmt.Errorf("tracking install: %w", err)}
+			}
+		} else {
+			if err := utils.SetModuleUninstalled(moduleName); err != nil {
+				return InstallCompleteMsg{moduleName, false, fmt.Errorf("tracking uninstall: %w", err)}
+			}
 		}
 		return InstallCompleteMsg{ModuleName: moduleName, Success: true}
 	}

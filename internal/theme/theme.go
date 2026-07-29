@@ -233,6 +233,7 @@ const (
 var ModuleIcons = map[string]string{
 	"nvim":             "",
 	"neovim":           "",
+	"cursor":           "󰨞",
 	"zsh":              "",
 	"git":              "",
 	"gh":               "",
